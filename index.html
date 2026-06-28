@@ -1,0 +1,1288 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root {
+    --bg: #F7F3EC;
+    --surface: #FFFFFF;
+    --text: #2A2622;
+    --text-muted: #6B6259;
+    --accent: #B6592F;
+    --accent-dark: #8C4424;
+    --border: #E5DDD0;
+    --good: #4B7A53;
+    --warn: #B68A2E;
+    --bad: #B23A2E;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  #app {
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    padding: 32px 20px 60px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 32px;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  .sub { color: var(--text-muted); margin: 0 0 32px; font-size: 15px; max-width: 560px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 22px;
+  }
+  .card h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 19px;
+    margin: 0 0 4px;
+  }
+  .card .hint { color: var(--text-muted); font-size: 13px; margin: 0 0 16px; }
+  textarea {
+    width: 100%;
+    min-height: 130px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    resize: vertical;
+    background: #FCFAF6;
+  }
+  input[type="file"] {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+  button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 20px;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    transition: background 0.15s ease;
+  }
+  button:hover:not(:disabled) { background: var(--accent-dark); }
+  button:disabled { background: #D8CFC0; color: #8a8275; cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    color: var(--accent-dark);
+    border: 1px solid var(--border);
+  }
+  button.secondary:hover:not(:disabled) { background: #F1EAE0; }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .thumb {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .thumb img { width: 100%; height: 110px; object-fit: cover; display: block; }
+  .thumb .meta {
+    padding: 8px 9px 10px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+  .qbadge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-bottom: 4px;
+  }
+  .qbadge.good { background: #E8F0E5; color: var(--good); }
+  .qbadge.warn { background: #F7EFD9; color: var(--warn); }
+  .qbadge.bad { background: #F6E3E0; color: var(--bad); }
+  .thumb label {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    background: rgba(255,255,255,0.92);
+    border-radius: 5px;
+    padding: 3px 5px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .progress-text { font-size: 13.5px; color: var(--text-muted); }
+  .bar-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 4px;
+    background: #ECE4D6;
+    overflow: hidden;
+    margin: 8px 0 4px;
+  }
+  .bar-fill { height: 100%; background: var(--accent); transition: width 0.2s ease; }
+  .best-shot {
+    display: flex;
+    gap: 22px;
+    align-items: flex-start;
+  }
+  .best-shot img {
+    width: 230px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    object-fit: cover;
+    aspect-ratio: 4/5;
+  }
+  .scorebar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12.5px; }
+  .scorebar-row .label { width: 90px; color: var(--text-muted); flex-shrink: 0; }
+  .scorebar-track { flex: 1; height: 6px; border-radius: 4px; background: #ECE4D6; overflow: hidden; }
+  .scorebar-fill { height: 100%; background: var(--accent); }
+  .scorebar-row .val { width: 28px; text-align: right; font-weight: 600; flex-shrink: 0; }
+  .notes { font-style: italic; color: var(--text-muted); font-size: 13px; margin-top: 10px; }
+  .slider-row { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; }
+  input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .carousel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .carousel-grid .thumb img { height: 130px; }
+  .pos-badge {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .moment-tag {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent-dark);
+    font-weight: 600;
+  }
+  .footnote { font-size: 12.5px; color: var(--text-muted); margin-top: 28px; max-width: 640px; }
+  .error-line { color: var(--bad); font-size: 13px; margin-top: 8px; }
+  .count-line { font-size: 13px; color: var(--text-muted); margin-top: 10px; }
+  .bulk-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .bulk-row input[type="number"] {
+    width: 52px;
+    padding: 7px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+  }
+  .bulk-row .divider { width: 1px; height: 20px; background: var(--border); }
+  .scored-badge {
+    position: absolute;
+    bottom: 7px;
+    right: 7px;
+    background: rgba(75,122,83,0.92);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+  .estimate-text { font-size: 13px; color: var(--text-muted); margin-top: 10px; }
+  .checkpoint-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .checkpoint-row .file-label {
+    font-size: 13px;
+    color: var(--accent-dark);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 14px;
+    cursor: pointer;
+  }
+  .export-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .caption-wrap { margin-top: 12px; display: none; }
+  .caption-wrap textarea {
+    width: 100%;
+    min-height: 90px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: #FCFAF6;
+    color: var(--text);
+  }
+  .caption-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .copy-status { font-size: 12px; color: var(--good); }
+</style>
+
+<div id="app">
+  <div class="wrap">
+    <h1>Carousel selection prototype</h1>
+    <p class="sub">Upload a sample batch of photos from a gallery. The engine scores each one, drops near-duplicates, picks the strongest single shot, and assembles an ordered carousel set.</p>
+
+    <div class="card">
+      <h2>Trend priorities</h2>
+      <p class="hint">What the AI weighs when judging "trend fit." Refresh this from real current trends instead of editing it by hand, or tweak it yourself below.</p>
+      <textarea id="trendBrief">Candid, unposed moments over stiff formal poses
+Documentary storytelling — real interactions over staged setups
+Behind-the-scenes / in-between moments (quiet nerves, laughter, getting ready)
+Raw, "messy" detail shots over overly styled flat-lays
+Vertical, mobile-first framing
+Film-like grain and warm, true-to-skin tones over heavy filters
+Intimate micro-moments: a hand squeeze, a glance, a held breath
+Occasional bold high-contrast / direct-flash shot for variety</textarea>
+      <div class="export-row" style="margin-top:14px;">
+        <input type="text" id="trendFocusInput" placeholder="Optional focus (e.g. destination weddings, a specific region or style)" style="flex:1; min-width:220px; padding:9px 12px; border:1px solid var(--border); border-radius:7px; font-family:'Inter',sans-serif; font-size:13px;">
+        <button class="secondary" id="refreshTrendBtn">Refresh from current trends</button>
+        <span class="progress-text" id="trendRefreshCostHint"></span>
+      </div>
+      <div id="trendRefreshStatus" class="progress-text" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>1. Upload sample photos</h2>
+      <p class="hint">Built to handle a full gallery — up to 800 photos. Large batches use more browser memory; if things feel sluggish, try a 100-150 photo subset first.</p>
+      <input type="file" id="fileInput" accept="image/*" multiple>
+      <div id="uploadCount" class="count-line"></div>
+      <div class="bulk-row" id="bulkRow" style="display:none;">
+        <button class="secondary" id="selectAllBtn">Select all</button>
+        <button class="secondary" id="selectNoneBtn">Select none</button>
+        <div class="divider"></div>
+        <span class="progress-text">Include only quick quality ≥</span>
+        <input type="number" id="qualityThreshold" min="0" max="10" step="0.5" value="4">
+        <button class="secondary" id="applyThresholdBtn">Apply</button>
+      </div>
+      <div class="grid" id="thumbGrid"></div>
+    </div>
+
+    <div class="card" id="analyzeCard" style="display:none;">
+      <h2>2. Run AI scoring</h2>
+      <p class="hint">Scores technical quality, aesthetic strength, trend fit, and scroll-stopping potential for every checked photo, and tags its moment type.</p>
+      <div class="row">
+        <button id="runBtn">Run AI analysis on checked photos</button>
+        <button class="secondary" id="resetBtn">Start over</button>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <span class="progress-text">Parallel requests:</span>
+        <input type="number" id="concurrencyInput" min="1" max="8" value="2" style="width:48px; padding:6px 8px; border:1px solid var(--border); border-radius:6px;">
+        <span class="progress-text" style="color:var(--text-muted);">(2 is a safer default — this account hit rate limits at 4; raise it cautiously if you don't see failures)</span>
+      </div>
+      <div id="estimateText" class="estimate-text"></div>
+      <div id="progressWrap" style="display:none; margin-top:14px;">
+        <div class="progress-text" id="progressText"></div>
+        <div class="bar-track"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+      </div>
+      <div id="errorLine"></div>
+
+      <div class="checkpoint-row">
+        <label class="file-label">
+          Load checkpoint (.json)
+          <input type="file" id="checkpointInput" accept="application/json" style="display:none;">
+        </label>
+        <button class="secondary" id="saveProgressBtn" disabled>Save progress (.json)</button>
+        <span id="checkpointStatus" class="progress-text"></span>
+      </div>
+    </div>
+
+    <div class="card" id="resultsCard" style="display:none;">
+      <h2>Best single shot</h2>
+      <div id="bestShotWrap"></div>
+      <div class="export-row">
+        <button class="secondary" id="bestDownloadBtn">Download this photo</button>
+        <button class="secondary" id="bestCaptionBtn">Generate caption</button>
+        <span class="progress-text" id="bestCaptionCost"></span>
+      </div>
+      <div class="caption-wrap" id="bestCaptionWrap">
+        <textarea id="bestCaptionText"></textarea>
+        <div class="caption-actions">
+          <button class="secondary" id="bestCopyBtn">Copy caption</button>
+          <span class="copy-status" id="bestCopyStatus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="carouselCard" style="display:none;">
+      <h2>Carousel set</h2>
+      <div class="slider-row">
+        <span class="progress-text">Photos in carousel:</span>
+        <input type="range" id="nSlider" min="3" max="10" value="6">
+        <span id="nLabel" style="font-weight:600; width:20px;">6</span>
+      </div>
+      <div id="carouselGrid" class="carousel-grid"></div>
+      <div class="export-row">
+        <button class="secondary" id="carouselDownloadBtn">Download carousel (.zip, ordered)</button>
+        <button class="secondary" id="carouselCaptionBtn">Generate caption</button>
+        <span class="progress-text" id="carouselCaptionCost"></span>
+      </div>
+      <div class="caption-wrap" id="carouselCaptionWrap">
+        <textarea id="carouselCaptionText"></textarea>
+        <div class="caption-actions">
+          <button class="secondary" id="carouselCopyBtn">Copy caption</button>
+          <span class="copy-status" id="carouselCopyStatus"></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="footnote">
+      Scoring weights: aesthetic strength 35%, trend fit 30%, technical quality 20%, hook potential 15%. Near-duplicate frames (perceptual hash) are collapsed to the best shot in each burst before selection. The carousel is built greedily: strongest overall shot anchors the set, then each next pick balances its own score against how different it is from what's already chosen, so you don't end up with eight near-identical frames.
+    </p>
+  </div>
+</div>
+
+<script>
+(function () {
+  const MAX_FILES = 800;
+  const HASH_DIST_THRESHOLD = 6;
+  const MOMENT_ARC_ORDER = {
+    getting_ready: 0, candid: 1, ceremony: 2, portrait: 3, reception: 4, detail: 5, other: 6
+  };
+  const VALID_MOMENTS = Object.keys(MOMENT_ARC_ORDER);
+  const CLIENT_PROCESS_CONCURRENCY = 6;
+  const ASSUMED_SECONDS_PER_CALL = 3; // rough estimate only, used for the time estimate display
+
+  // Pricing reference (verified, not assumed): Claude Sonnet 4.6 standard API
+  // rates as of late June 2026 — $3 / $15 per million input/output tokens.
+  // Image tokens use Anthropic's current published formula: an image costs
+  // ceil(width/28) x ceil(height/28) visual tokens. Web search is billed
+  // separately at $10 per 1,000 searches, in addition to token usage.
+  // These rates can change — recheck platform.claude.com/docs/en/about-claude/pricing
+  // periodically rather than assuming this stays accurate indefinitely.
+  const PRICE_INPUT_PER_MTOK = 3.0;
+  const PRICE_OUTPUT_PER_MTOK = 15.0;
+  const PRICE_PER_SEARCH = 0.01;
+  const ASSUMED_OUTPUT_TOKENS_SCORING = 150;
+  const ASSUMED_OUTPUT_TOKENS_CAPTION_SINGLE = 220;
+  const ASSUMED_OUTPUT_TOKENS_CAPTION_CAROUSEL = 260;
+  // Service multiplier covers this platform's usage, infrastructure, and
+  // maintenance costs on top of the underlying API rate. Applied to every
+  // displayed estimate before formatting, rather than shown as a line item.
+  const SERVICE_MULTIPLIER = 1.10;
+
+  function imageTokens(w, h) {
+    if (!w || !h) return 0;
+    return Math.ceil(w / 28) * Math.ceil(h / 28);
+  }
+
+  function estimateTextTokens(str) {
+    return Math.ceil((str || '').length / 4); // ~4 chars per token, standard rule of thumb
+  }
+
+  function tokensFromChars(charCount) {
+    return Math.ceil(charCount / 4);
+  }
+
+  function costForTokens(inputTokens, outputTokens) {
+    const raw = (inputTokens * PRICE_INPUT_PER_MTOK + outputTokens * PRICE_OUTPUT_PER_MTOK) / 1e6;
+    return raw * SERVICE_MULTIPLIER;
+  }
+
+  function formatCost(usd) {
+    if (usd <= 0) return '$0.00';
+    if (usd < 0.01) return '$' + usd.toFixed(4);
+    return '$' + usd.toFixed(2);
+  }
+
+  let photos = [];      // raw uploads + client-side metrics
+  let dedupedPool = [];  // after AI scoring + dedup, used for selection
+  let checkpointMap = {}; // filename -> ai object, loaded from a saved checkpoint
+  let globalBackoffUntil = 0;   // when hit, ALL parallel slots pause until this time, not just the one that failed
+  let rateLimitBackoffMs = 3000; // grows on repeated 429s within a run, reset each run
+
+  const thumbGrid = document.getElementById('thumbGrid');
+  const uploadCount = document.getElementById('uploadCount');
+  const bulkRow = document.getElementById('bulkRow');
+  const selectAllBtn = document.getElementById('selectAllBtn');
+  const selectNoneBtn = document.getElementById('selectNoneBtn');
+  const qualityThreshold = document.getElementById('qualityThreshold');
+  const applyThresholdBtn = document.getElementById('applyThresholdBtn');
+  const analyzeCard = document.getElementById('analyzeCard');
+  const runBtn = document.getElementById('runBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const concurrencyInput = document.getElementById('concurrencyInput');
+  const estimateText = document.getElementById('estimateText');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressText = document.getElementById('progressText');
+  const barFill = document.getElementById('barFill');
+  const errorLine = document.getElementById('errorLine');
+  const checkpointInput = document.getElementById('checkpointInput');
+  const saveProgressBtn = document.getElementById('saveProgressBtn');
+  const checkpointStatus = document.getElementById('checkpointStatus');
+  const resultsCard = document.getElementById('resultsCard');
+  const bestShotWrap = document.getElementById('bestShotWrap');
+  const carouselCard = document.getElementById('carouselCard');
+  const carouselGrid = document.getElementById('carouselGrid');
+  const nSlider = document.getElementById('nSlider');
+  const nLabel = document.getElementById('nLabel');
+  const bestDownloadBtn = document.getElementById('bestDownloadBtn');
+  const bestCaptionBtn = document.getElementById('bestCaptionBtn');
+  const bestCaptionWrap = document.getElementById('bestCaptionWrap');
+  const bestCaptionText = document.getElementById('bestCaptionText');
+  const bestCopyBtn = document.getElementById('bestCopyBtn');
+  const bestCopyStatus = document.getElementById('bestCopyStatus');
+  const carouselDownloadBtn = document.getElementById('carouselDownloadBtn');
+  const carouselCaptionBtn = document.getElementById('carouselCaptionBtn');
+  const carouselCaptionWrap = document.getElementById('carouselCaptionWrap');
+  const carouselCaptionText = document.getElementById('carouselCaptionText');
+  const carouselCopyBtn = document.getElementById('carouselCopyBtn');
+  const carouselCopyStatus = document.getElementById('carouselCopyStatus');
+
+  let currentBest = null;
+  let currentCarouselOrdered = [];
+
+  document.getElementById('fileInput').addEventListener('change', (e) => handleFiles(e.target.files));
+  runBtn.addEventListener('click', runAnalysis);
+  resetBtn.addEventListener('click', () => location.reload());
+  concurrencyInput.addEventListener('input', recomputeEstimate);
+  selectAllBtn.addEventListener('click', () => { photos.forEach(p => p.included = true); renderThumbs(); recomputeEstimate(); });
+  selectNoneBtn.addEventListener('click', () => { photos.forEach(p => p.included = false); renderThumbs(); recomputeEstimate(); });
+  applyThresholdBtn.addEventListener('click', () => {
+    const t = parseFloat(qualityThreshold.value) || 0;
+    photos.forEach(p => { p.included = p.quickQuality >= t; });
+    renderThumbs();
+    recomputeEstimate();
+  });
+  checkpointInput.addEventListener('change', (e) => { if (e.target.files[0]) loadCheckpoint(e.target.files[0]); });
+  saveProgressBtn.addEventListener('click', saveProgress);
+  nSlider.addEventListener('input', () => {
+    nLabel.textContent = nSlider.value;
+    renderCarousel(parseInt(nSlider.value, 10));
+  });
+  bestDownloadBtn.addEventListener('click', downloadBestShotPhoto);
+  bestCaptionBtn.addEventListener('click', () => generateBestCaption());
+  bestCopyBtn.addEventListener('click', () => copyCaption(bestCaptionText, bestCopyStatus));
+  carouselDownloadBtn.addEventListener('click', downloadCarouselZip);
+  carouselCaptionBtn.addEventListener('click', () => generateCarouselCaption());
+  carouselCopyBtn.addEventListener('click', () => copyCaption(carouselCaptionText, carouselCopyStatus));
+  document.getElementById('refreshTrendBtn').addEventListener('click', refreshTrendBrief);
+  document.getElementById('trendBrief').addEventListener('input', recomputeEstimate);
+
+
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = reader.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function canvasFromImage(img, w, h) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    // cover-fit so thumbnails/hashes aren't squished
+    const scale = Math.max(w / img.width, h / img.height);
+    const dw = img.width * scale, dh = img.height * scale;
+    ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    return { canvas: c, ctx };
+  }
+
+  function fitCanvasFromImage(img, maxDim) {
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    return c;
+  }
+
+  function grayscaleData(ctx, w, h) {
+    const data = ctx.getImageData(0, 0, w, h).data;
+    const gray = new Float32Array(w * h);
+    for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+      gray[p] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    }
+    return gray;
+  }
+
+  function computeSharpnessRaw(gray, w, h) {
+    let sum = 0, n = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w - 1; x++) {
+        const d = gray[y * w + x + 1] - gray[y * w + x];
+        sum += d * d; n++;
+      }
+    }
+    for (let y = 0; y < h - 1; y++) {
+      for (let x = 0; x < w; x++) {
+        const d = gray[(y + 1) * w + x] - gray[y * w + x];
+        sum += d * d; n++;
+      }
+    }
+    return sum / n;
+  }
+
+  function computeExposureScore(gray) {
+    let sum = 0;
+    for (let i = 0; i < gray.length; i++) sum += gray[i];
+    const mean = sum / gray.length;
+    const score = 10 - Math.abs(mean - 128) / 12.8;
+    return Math.max(0, Math.min(10, score));
+  }
+
+  function computePhash(img) {
+    const { ctx } = canvasFromImage(img, 8, 8);
+    const gray = grayscaleData(ctx, 8, 8);
+    let mean = 0;
+    for (let i = 0; i < gray.length; i++) mean += gray[i];
+    mean /= gray.length;
+    let hash = '';
+    for (let i = 0; i < gray.length; i++) hash += gray[i] > mean ? '1' : '0';
+    return hash;
+  }
+
+  function hammingDistance(a, b) {
+    let d = 0;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
+    return d;
+  }
+
+  // Scans for the first "{" in the raw response text and walks forward
+  // counting brace depth to find its true matching "}". This is robust
+  // whether the model wraps the JSON in a markdown fence, adds a label like
+  // "```JSON", or adds a stray sentence before or after the object — anything
+  // outside that balanced span is simply ignored.
+  function extractJson(text) {
+    const start = text.indexOf('{');
+    if (start === -1) throw new Error('No JSON object found in response');
+    let depth = 0, end = -1;
+    for (let i = start; i < text.length; i++) {
+      if (text[i] === '{') depth++;
+      else if (text[i] === '}') {
+        depth--;
+        if (depth === 0) { end = i; break; }
+      }
+    }
+    if (end === -1) throw new Error('Unterminated JSON object in response');
+    return JSON.parse(text.slice(start, end + 1));
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // Runs `worker` over `items` with at most `concurrency` in flight at once.
+  // Results are returned in input order regardless of completion order.
+  async function runWithConcurrency(items, worker, concurrency, onProgress) {
+    let index = 0;
+    let completed = 0;
+    const results = new Array(items.length);
+
+    async function runner() {
+      while (true) {
+        const i = index++;
+        if (i >= items.length) return;
+        try {
+          results[i] = { ok: true, value: await worker(items[i], i) };
+        } catch (err) {
+          results[i] = { ok: false, error: err };
+        }
+        completed++;
+        if (onProgress) onProgress(completed, items.length);
+      }
+    }
+
+    const runnerCount = Math.max(1, Math.min(concurrency, items.length));
+    await Promise.all(Array.from({ length: runnerCount }, runner));
+    return results;
+  }
+
+  async function handleFiles(fileList) {
+    let files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    let truncated = false;
+    if (files.length > MAX_FILES) { files = files.slice(0, MAX_FILES); truncated = true; }
+
+    uploadCount.textContent = `Loaded 0 of ${files.length} photo(s)...`;
+    thumbGrid.innerHTML = '';
+    photos = new Array(files.length);
+
+    async function processOne(file, i) {
+      const img = await loadImage(file);
+      const apiCanvas = fitCanvasFromImage(img, 1024);
+      const dataUrl = apiCanvas.toDataURL('image/jpeg', 0.82);
+      const base64 = dataUrl.split(',')[1];
+
+      const smallCanvas = fitCanvasFromImage(img, 64);
+      const sCtx = smallCanvas.getContext('2d');
+      const gray = grayscaleData(sCtx, smallCanvas.width, smallCanvas.height);
+      const sharpnessRaw = computeSharpnessRaw(gray, smallCanvas.width, smallCanvas.height);
+      const exposureScore = computeExposureScore(gray);
+      const phash = computePhash(img);
+
+      const cachedAi = checkpointMap[file.name] || null;
+
+      photos[i] = {
+        id: 'p' + i,
+        name: file.name,
+        dataUrl, base64, phash, sharpnessRaw, exposureScore,
+        apiWidth: apiCanvas.width, apiHeight: apiCanvas.height,
+        included: true, quickQuality: null,
+        ai: cachedAi
+      };
+    }
+
+    let done = 0;
+    await runWithConcurrency(files, async (file, i) => {
+      await processOne(file, i);
+      done++;
+      uploadCount.textContent = `Loaded ${done} of ${files.length} photo(s)...`;
+    }, CLIENT_PROCESS_CONCURRENCY);
+
+    const rawSharpness = photos.map(p => p.sharpnessRaw);
+    const minS = Math.min(...rawSharpness), maxS = Math.max(...rawSharpness);
+    photos.forEach(p => {
+      const sharpNorm = maxS > minS ? ((p.sharpnessRaw - minS) / (maxS - minS)) * 10 : 7;
+      p.quickQuality = sharpNorm * 0.6 + p.exposureScore * 0.4;
+      if (p.quickQuality < 3 && !p.ai) p.included = false;
+    });
+
+    const alreadyScoredCount = photos.filter(p => p.ai).length;
+    uploadCount.textContent = `Loaded ${photos.length} photo(s).` +
+      (truncated ? ` (capped at ${MAX_FILES} for this prototype)` : '') +
+      (files.length > 600 ? ' Large batch — this uses significant memory; if your browser feels sluggish, try a smaller subset.' : '') +
+      (alreadyScoredCount > 0 ? ` ${alreadyScoredCount} already scored from the loaded checkpoint.` : '');
+
+    bulkRow.style.display = photos.length ? 'flex' : 'none';
+    renderThumbs();
+    recomputeEstimate();
+    analyzeCard.style.display = photos.length ? 'block' : 'none';
+  }
+
+  function qBadgeClass(q) {
+    if (q >= 7) return 'good';
+    if (q >= 4) return 'warn';
+    return 'bad';
+  }
+
+  function renderThumbs() {
+    thumbGrid.innerHTML = '';
+    photos.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'thumb';
+      div.innerHTML = `
+        <img src="${p.dataUrl}" alt="">
+        <label><input type="checkbox" ${p.included ? 'checked' : ''} data-id="${p.id}"> use</label>
+        <div class="meta">
+          <span class="qbadge ${qBadgeClass(p.quickQuality)}">quick quality ${p.quickQuality.toFixed(1)}</span>
+        </div>
+        ${p.ai ? '<span class="scored-badge">scored</span>' : ''}`;
+      thumbGrid.appendChild(div);
+    });
+    thumbGrid.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        const p = photos.find(x => x.id === e.target.dataset.id);
+        if (p) p.included = e.target.checked;
+        recomputeEstimate();
+      });
+    });
+  }
+
+  function recomputeEstimate() {
+    const included = photos.filter(p => p.included);
+    const needsScoring = included.filter(p => !p.ai);
+    const concurrency = Math.max(1, Math.min(8, parseInt(concurrencyInput.value, 10) || 2));
+    const seconds = Math.ceil(needsScoring.length / concurrency) * ASSUMED_SECONDS_PER_CALL;
+    const mins = Math.ceil(seconds / 60);
+    if (included.length === 0) {
+      estimateText.textContent = '';
+      return;
+    }
+    const alreadyDone = included.length - needsScoring.length;
+
+    const trendBrief = document.getElementById('trendBrief').value;
+    const promptTokens = estimateTextTokens(buildPrompt(trendBrief));
+    let totalInputTokens = 0;
+    needsScoring.forEach(p => { totalInputTokens += imageTokens(p.apiWidth, p.apiHeight) + promptTokens; });
+    const totalOutputTokens = needsScoring.length * ASSUMED_OUTPUT_TOKENS_SCORING;
+    const cost = costForTokens(totalInputTokens, totalOutputTokens);
+
+    estimateText.textContent = `${included.length} photo(s) checked` +
+      (alreadyDone > 0 ? ` (${alreadyDone} already scored, ${needsScoring.length} new)` : '') +
+      ` — rough estimate at ${concurrency} parallel requests: ~${mins} minute(s). Estimated cost: ~${formatCost(cost)}.`;
+  }
+
+  function saveProgress() {
+    const scoredList = photos.filter(p => p.ai).map(p => ({ name: p.name, ai: p.ai }));
+    const blob = new Blob([JSON.stringify(scoredList, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scoring-checkpoint-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function loadCheckpoint(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const arr = JSON.parse(reader.result);
+        checkpointMap = {};
+        arr.forEach(item => { if (item && item.name && item.ai) checkpointMap[item.name] = item.ai; });
+
+        let matched = 0;
+        photos.forEach(p => {
+          if (!p.ai && checkpointMap[p.name]) {
+            p.ai = checkpointMap[p.name];
+            matched++;
+          }
+        });
+        if (photos.length) renderThumbs();
+        recomputeEstimate();
+        checkpointStatus.textContent = `Loaded ${arr.length} scored photo(s) from checkpoint` +
+          (photos.length ? `, matched ${matched} against currently uploaded photos.` : ' — upload the same photos to apply them.');
+      } catch (err) {
+        checkpointStatus.textContent = 'Could not read that checkpoint file — make sure it is the .json file saved by "Save progress".';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function buildPrompt(trendBrief) {
+    return `Score this wedding photo for a photographer's social media curation tool.
+
+Current trend priorities this studio is leaning into:
+${trendBrief}
+
+Score the photo 0-10 on each of these:
+- technical_quality: focus, exposure, composition fundamentals
+- aesthetic_score: emotional impact, artistry, storytelling power
+- trend_fit: how well it matches the trend priorities above
+- hook_potential: how likely this exact image is to stop someone mid-scroll as the first image in a post
+
+Also classify moment_type as exactly one of: getting_ready, candid, ceremony, portrait, reception, detail, other.
+Add a one-sentence note (max 15 words) explaining the scores.
+
+Your reply must be raw JSON only — no markdown, no code fences, no text before or after — in exactly this shape:
+{"technical_quality": number, "aesthetic_score": number, "trend_fit": number, "hook_potential": number, "moment_type": string, "notes": string}`;
+  }
+
+  async function scoreImageWithAI(base64, trendBrief) {
+    const waitMs = globalBackoffUntil - Date.now();
+    if (waitMs > 0) await sleep(waitMs);
+
+    const response = await fetch('/api/anthropic-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: 'Respond with raw JSON only. No markdown, no code fences, no commentary outside the JSON object.',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+              { type: 'text', text: buildPrompt(trendBrief) }
+            ]
+          }
+        ]
+      })
+    });
+    if (!response.ok) {
+      let detail = '';
+      try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
+      const err = new Error(`API request failed: ${response.status} ${detail}`);
+      if (response.status === 429) {
+        // Pause every parallel slot, not just this one — a concurrent-request
+        // ceiling means the other slots are contributing to the problem too.
+        err.isRateLimit = true;
+        rateLimitBackoffMs = Math.min(rateLimitBackoffMs * 2, 30000);
+        globalBackoffUntil = Date.now() + rateLimitBackoffMs;
+      }
+      throw err;
+    }
+    const data = await response.json();
+    const textBlock = (data.content || []).find(c => c.type === 'text');
+    if (!textBlock) throw new Error('No text response from model');
+    const parsed = extractJson(textBlock.text);
+    if (!VALID_MOMENTS.includes(parsed.moment_type)) parsed.moment_type = 'other';
+    return parsed;
+  }
+
+  function compositeScore(img) {
+    return img.technicalQuality * 0.2 + img.aestheticScore * 0.35 + img.trendFit * 0.30 + img.hookPotential * 0.15;
+  }
+
+  function dedupeNearDuplicates(images) {
+    const clusters = [];
+    const used = new Array(images.length).fill(false);
+    for (let i = 0; i < images.length; i++) {
+      if (used[i]) continue;
+      const cluster = [images[i]];
+      used[i] = true;
+      for (let j = i + 1; j < images.length; j++) {
+        if (used[j]) continue;
+        if (hammingDistance(images[i].phash, images[j].phash) <= HASH_DIST_THRESHOLD) {
+          cluster.push(images[j]);
+          used[j] = true;
+        }
+      }
+      cluster.sort((a, b) => compositeScore(b) - compositeScore(a));
+      clusters.push(cluster[0]);
+    }
+    return clusters;
+  }
+
+  function selectCarousel(images, targetN) {
+    const pool = images.map(img => ({ ...img, _score: compositeScore(img) }));
+    pool.sort((a, b) => b._score - a._score);
+    if (pool.length === 0) return [];
+
+    const selected = [pool[0]];
+    const remaining = pool.slice(1);
+    const SIM_W = 0.04, MOMENT_PENALTY = 1.2;
+
+    while (selected.length < targetN && remaining.length > 0) {
+      let bestIdx = -1, bestVal = -Infinity;
+      for (let i = 0; i < remaining.length; i++) {
+        const cand = remaining[i];
+        let minDist = Infinity, repeats = 0;
+        for (const s of selected) {
+          const d = hammingDistance(cand.phash, s.phash);
+          if (d < minDist) minDist = d;
+          if (s.momentType === cand.momentType) repeats++;
+        }
+        const penalty = Math.max(0, 32 - minDist) * SIM_W + repeats * MOMENT_PENALTY;
+        const val = cand._score - penalty;
+        if (val > bestVal) { bestVal = val; bestIdx = i; }
+      }
+      selected.push(remaining[bestIdx]);
+      remaining.splice(bestIdx, 1);
+    }
+    return selected;
+  }
+
+  function orderCarousel(selected) {
+    const hook = selected[0];
+    const rest = selected.slice(1).sort((a, b) => {
+      const ai = MOMENT_ARC_ORDER[a.momentType] ?? 6;
+      const bi = MOMENT_ARC_ORDER[b.momentType] ?? 6;
+      if (ai !== bi) return ai - bi;
+      return b._score - a._score;
+    });
+    return [hook, ...rest];
+  }
+
+  function toScoredShape(p) {
+    return {
+      ...p,
+      technicalQuality: p.ai.technical_quality,
+      aestheticScore: p.ai.aesthetic_score,
+      trendFit: p.ai.trend_fit,
+      hookPotential: p.ai.hook_potential,
+      momentType: p.ai.moment_type,
+      notes: p.ai.notes
+    };
+  }
+
+  async function scoreWithRetries(p, trendBrief) {
+    const MAX_ATTEMPTS = 5;
+    let lastErr;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        return await scoreImageWithAI(p.base64, trendBrief);
+      } catch (err) {
+        lastErr = err;
+        if (attempt < MAX_ATTEMPTS) {
+          const backoff = err.isRateLimit ? 1000 * Math.pow(2, attempt) : 400 * attempt;
+          await sleep(backoff);
+        }
+      }
+    }
+    throw lastErr;
+  }
+
+  async function runAnalysis() {
+    const included = photos.filter(p => p.included);
+    if (included.length === 0) {
+      errorLine.innerHTML = '<div class="error-line">No photos selected — check at least one box above.</div>';
+      return;
+    }
+    const needsScoring = included.filter(p => !p.ai);
+    const alreadyScored = included.filter(p => p.ai);
+
+    runBtn.disabled = true;
+    errorLine.innerHTML = '';
+    progressWrap.style.display = 'block';
+    globalBackoffUntil = 0;
+    rateLimitBackoffMs = 3000;
+    const trendBrief = document.getElementById('trendBrief').value;
+    const concurrency = Math.max(1, Math.min(8, parseInt(concurrencyInput.value, 10) || 2));
+
+    let failures = 0;
+    progressText.textContent = `Scoring ${needsScoring.length} photo(s) (${alreadyScored.length} already done) at ${concurrency} at a time...`;
+    barFill.style.width = '0%';
+
+    if (needsScoring.length > 0) {
+      const results = await runWithConcurrency(needsScoring, async (p) => {
+        const ai = await scoreWithRetries(p, trendBrief);
+        p.ai = ai;
+      }, concurrency, (completed, total) => {
+        progressText.textContent = `Scored ${completed} of ${total} new photo(s)...`;
+        barFill.style.width = `${Math.round((completed / total) * 100)}%`;
+      });
+      failures = results.filter(r => !r.ok).length;
+      results.forEach((r, i) => {
+        if (!r.ok) console.warn('Scoring failed for', needsScoring[i].name, 'after 3 attempts:', r.error);
+      });
+    }
+
+    barFill.style.width = '100%';
+    const scored = photos.filter(p => p.included && p.ai).map(toScoredShape);
+    progressText.textContent = `Done. ${scored.length} of ${included.length} photo(s) scored.`;
+    if (failures > 0) {
+      errorLine.innerHTML = `<div class="error-line">${failures} photo(s) failed to score after 3 attempts and were excluded — your progress on the rest is saved below if you'd like to keep it before retrying.</div>`;
+    }
+
+    renderThumbs(); // refresh "scored" badges
+    saveProgressBtn.disabled = !photos.some(p => p.ai);
+    recomputeEstimate();
+
+    dedupedPool = dedupeNearDuplicates(scored);
+    if (dedupedPool.length === 0) {
+      errorLine.innerHTML += '<div class="error-line">No photos scored successfully — nothing to show.</div>';
+      runBtn.disabled = false;
+      return;
+    }
+
+    renderBestShot();
+    const maxN = Math.min(10, dedupedPool.length);
+    nSlider.max = maxN;
+    nSlider.value = Math.min(6, maxN);
+    nLabel.textContent = nSlider.value;
+    renderCarousel(parseInt(nSlider.value, 10));
+
+    resultsCard.style.display = 'block';
+    carouselCard.style.display = 'block';
+    runBtn.disabled = false;
+  }
+
+  function scoreBarRow(label, value) {
+    return `<div class="scorebar-row">
+      <span class="label">${label}</span>
+      <div class="scorebar-track"><div class="scorebar-fill" style="width:${value * 10}%"></div></div>
+      <span class="val">${value.toFixed(1)}</span>
+    </div>`;
+  }
+
+  function renderBestShot() {
+    const best = [...dedupedPool].sort((a, b) => compositeScore(b) - compositeScore(a))[0];
+    currentBest = best;
+    bestShotWrap.innerHTML = `
+      <div class="best-shot">
+        <img src="${best.dataUrl}" alt="">
+        <div style="flex:1;">
+          <div class="moment-tag">${best.momentType.replace('_', ' ')}</div>
+          ${scoreBarRow('Aesthetic', best.aestheticScore)}
+          ${scoreBarRow('Trend fit', best.trendFit)}
+          ${scoreBarRow('Technical', best.technicalQuality)}
+          ${scoreBarRow('Hook', best.hookPotential)}
+          <div class="notes">${best.notes || ''}</div>
+        </div>
+      </div>`;
+    bestCaptionWrap.style.display = 'none';
+    bestCaptionText.value = '';
+
+    const inputTokens = imageTokens(best.apiWidth, best.apiHeight) + tokensFromChars(450);
+    const cost = costForTokens(inputTokens, ASSUMED_OUTPUT_TOKENS_CAPTION_SINGLE);
+    document.getElementById('bestCaptionCost').textContent = `Estimated cost: ~${formatCost(cost)}`;
+  }
+
+  function renderCarousel(n) {
+    if (!dedupedPool.length) return;
+    const selected = selectCarousel(dedupedPool, n);
+    const ordered = orderCarousel(selected);
+    currentCarouselOrdered = ordered;
+    carouselGrid.innerHTML = '';
+    ordered.forEach((p, idx) => {
+      const div = document.createElement('div');
+      div.className = 'thumb';
+      div.title = p.notes || '';
+      div.innerHTML = `
+        <span class="pos-badge">${idx + 1}</span>
+        <img src="${p.dataUrl}" alt="">
+        <div class="meta">
+          <span class="moment-tag">${p.momentType.replace('_', ' ')}</span>
+        </div>`;
+      carouselGrid.appendChild(div);
+    });
+
+    let inputTokens = tokensFromChars(650);
+    ordered.forEach(p => { inputTokens += imageTokens(p.apiWidth, p.apiHeight) + tokensFromChars(30); });
+    const cost = costForTokens(inputTokens, ASSUMED_OUTPUT_TOKENS_CAPTION_CAROUSEL);
+    document.getElementById('carouselCaptionCost').textContent = `Estimated cost: ~${formatCost(cost)}`;
+
+    // The set just changed, so any previously generated caption no longer
+    // matches what's shown — clear it rather than leave a stale caption.
+    carouselCaptionWrap.style.display = 'none';
+    carouselCaptionText.value = '';
+  }
+
+  function downloadDataUrl(dataUrl, filename) {
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    a.click();
+  }
+
+  function downloadBestShotPhoto() {
+    if (!currentBest) return;
+    downloadDataUrl(currentBest.dataUrl, `best-shot-${currentBest.momentType}.jpg`);
+  }
+
+  async function downloadCarouselZip() {
+    if (!currentCarouselOrdered.length) return;
+    if (typeof JSZip === 'undefined') {
+      // Fallback if the CDN script didn't load (e.g. offline) — download
+      // each photo individually instead of bundling a zip.
+      currentCarouselOrdered.forEach((p, i) => {
+        downloadDataUrl(p.dataUrl, `${String(i + 1).padStart(2, '0')}-${p.momentType}.jpg`);
+      });
+      return;
+    }
+    const zip = new JSZip();
+    currentCarouselOrdered.forEach((p, i) => {
+      zip.file(`${String(i + 1).padStart(2, '0')}-${p.momentType}.jpg`, p.base64, { base64: true });
+    });
+    if (carouselCaptionText.value.trim()) {
+      zip.file('caption.txt', carouselCaptionText.value.trim());
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `carousel-${Date.now()}.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function cleanCaptionText(text) {
+    let t = text.trim();
+    t = t.replace(/^```[a-zA-Z]*\n?/, '').replace(/```$/, '').trim();
+    if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith('\u201c') && t.endsWith('\u201d'))) {
+      t = t.slice(1, -1).trim();
+    }
+    return t;
+  }
+
+  async function callCaptionAPI(content) {
+    const response = await fetch('/api/anthropic-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: 'Respond with only the caption text. No preamble, no surrounding quotation marks, no markdown formatting.',
+        messages: [{ role: 'user', content }]
+      })
+    });
+    if (!response.ok) {
+      let detail = '';
+      try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
+      throw new Error(`API request failed: ${response.status} ${detail}`);
+    }
+    const data = await response.json();
+    const textBlock = (data.content || []).find(c => c.type === 'text');
+    if (!textBlock) throw new Error('No text response from model');
+    return cleanCaptionText(textBlock.text);
+  }
+
+  async function generateBestCaption() {
+    if (!currentBest) return;
+    bestCaptionBtn.disabled = true;
+    bestCaptionWrap.style.display = 'block';
+    bestCaptionText.value = 'Writing a caption...';
+    const trendBrief = document.getElementById('trendBrief').value;
+    const prompt = `Write a short Instagram caption for this single wedding photo, posted by a professional wedding photography studio, in first person plural studio voice.
+
+Moment type: ${currentBest.momentType}
+What the photo shows: ${currentBest.notes || ''}
+
+Trend priorities this studio cares about:
+${trendBrief}
+
+2-4 warm, authentic sentences — avoid generic stock-photo language and cliches. End with a separate line of 6-10 relevant hashtags.`;
+    try {
+      const caption = await callCaptionAPI([
+        { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentBest.base64 } },
+        { type: 'text', text: prompt }
+      ]);
+      bestCaptionText.value = caption;
+    } catch (err) {
+      bestCaptionText.value = '';
+      bestCaptionWrap.style.display = 'none';
+      console.warn('Caption generation failed:', err);
+      errorLine.innerHTML = `<div class="error-line">Caption generation failed: ${err.message}</div>`;
+    }
+    bestCaptionBtn.disabled = false;
+  }
+
+  async function generateCarouselCaption() {
+    if (!currentCarouselOrdered.length) return;
+    carouselCaptionBtn.disabled = true;
+    carouselCaptionWrap.style.display = 'block';
+    carouselCaptionText.value = 'Writing a caption...';
+    const trendBrief = document.getElementById('trendBrief').value;
+    const introPrompt = `Write a short Instagram caption for a ${currentCarouselOrdered.length}-photo carousel post from a wedding, posted by a professional wedding photography studio, in first person plural studio voice. The photos are shown below in the order they'll appear in the carousel — write one caption that captures the overall arc, not a description of each slide individually.
+
+Trend priorities this studio cares about:
+${trendBrief}
+
+2-4 warm, authentic sentences — avoid generic stock-photo language and cliches. End with a separate line of 6-10 relevant hashtags.`;
+    const content = [{ type: 'text', text: introPrompt }];
+    currentCarouselOrdered.forEach((p, i) => {
+      content.push({ type: 'text', text: `Photo ${i + 1} (${p.momentType}):` });
+      content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: p.base64 } });
+    });
+    try {
+      const caption = await callCaptionAPI(content);
+      carouselCaptionText.value = caption;
+    } catch (err) {
+      carouselCaptionText.value = '';
+      carouselCaptionWrap.style.display = 'none';
+      console.warn('Caption generation failed:', err);
+      errorLine.innerHTML = `<div class="error-line">Caption generation failed: ${err.message}</div>`;
+    }
+    carouselCaptionBtn.disabled = false;
+  }
+
+  function copyCaption(textareaEl, statusEl) {
+    textareaEl.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textareaEl.value).then(() => {
+        statusEl.textContent = 'Copied';
+        setTimeout(() => { statusEl.textContent = ''; }, 1500);
+      }).catch(() => {
+        statusEl.textContent = 'Text selected — press Ctrl+C / Cmd+C to copy.';
+      });
+    } else {
+      statusEl.textContent = 'Text selected — press Ctrl+C / Cmd+C to copy.';
+    }
+  }
+
+  // Replaces manual "go read some trend articles and rewrite the textarea"
+  // with an actual web search, run by Claude's own web search tool, called
+  // the same way the scoring/caption calls are — just with `tools` added.
+  // Replaces manual "go read some trend articles and rewrite the textarea"
+  // with an actual web search, run by Claude's own web search tool, called
+  // the same way the scoring/caption calls are — just with `tools` added.
+  function extractTrendLines(text) {
+    const startMarker = '<<<TRENDS>>>';
+    const endMarker = '<<<END>>>';
+    const startIdx = text.indexOf(startMarker);
+    const endIdx = text.indexOf(endMarker);
+    // If the model adds research notes before the markers or a sign-off
+    // after them despite instructions, slicing between the markers ignores
+    // all of that rather than trying to pattern-match commentary away.
+    const segment = (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx)
+      ? text.slice(startIdx + startMarker.length, endIdx)
+      : text;
+    return segment.split('\n')
+      .map(l => l.replace(/^[\s]*[-*\u2022]\s*/, '').replace(/^\d+[.)]\s*/, '').trim())
+      .filter(l => l.length > 0 && l.length < 160 && !/:$/.test(l));
+  }
+
+  async function refreshTrendBrief() {
+    const btn = document.getElementById('refreshTrendBtn');
+    const status = document.getElementById('trendRefreshStatus');
+    const focus = document.getElementById('trendFocusInput').value.trim();
+    const trendBriefEl = document.getElementById('trendBrief');
+
+    btn.disabled = true;
+    status.textContent = 'Searching for current trends...';
+
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const prompt = `Search for what is currently trending in wedding photography and wedding content on Instagram and TikTok, as of today (${today}).` +
+      (focus ? ` Pay particular attention to relevance for: ${focus}.` : '') +
+      `\n\nCondense your findings into a short list of current content and style trends a wedding photography studio should weigh when picking and posting photos — concrete and actionable (e.g. "candid over posed", "vertical framing", "raw behind-the-scenes paired with the polished shot"), not vague themes.\n\nPut the final list, and only the list, between these exact markers, one trend per line inside them, short phrases under 12 words each, 6-10 lines, no bullet symbols, no numbering:\n<<<TRENDS>>>\n(your lines here)\n<<<END>>>\n\nYou can research and reason before the markers, but nothing should appear after <<<END>>>.`;
+
+    let lastErr;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await fetch('/api/anthropic-proxy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 2000,
+            tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+        if (!response.ok) {
+          let detail = '';
+          try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
+          throw new Error(`API request failed: ${response.status} ${detail}`);
+        }
+        const data = await response.json();
+        const combined = (data.content || [])
+          .filter(c => c.type === 'text')
+          .map(c => c.text)
+          .join('\n')
+          .trim();
+
+        const lines = extractTrendLines(combined);
+        if (lines.length === 0) throw new Error('No usable trend lines came back from the search');
+
+        trendBriefEl.value = lines.join('\n');
+        status.textContent = `Last refreshed: ${new Date().toLocaleString()}`;
+        lastErr = null;
+        break;
+      } catch (err) {
+        lastErr = err;
+        if (attempt === 1) await sleep(1500);
+      }
+    }
+    if (lastErr) {
+      console.warn('Trend refresh failed:', lastErr);
+      status.textContent = `Refresh failed: ${lastErr.message}. Your existing trend brief was left unchanged.`;
+    }
+    btn.disabled = false;
+  }
+
+  // Search count varies (1 search for a quick lookup, several for broader
+  // research), so this is shown as a range rather than a false-precision
+  // single number — computed from the same pricing constants as everything
+  // else, not a separately hardcoded guess.
+  (function showTrendRefreshCostRange() {
+    const TOOL_OVERHEAD_TOKENS = 500;
+    const low = costForTokens(TOOL_OVERHEAD_TOKENS + 1500, 400) + PRICE_PER_SEARCH * 1 * SERVICE_MULTIPLIER;
+    const high = costForTokens(TOOL_OVERHEAD_TOKENS + 6000, 500) + PRICE_PER_SEARCH * 4 * SERVICE_MULTIPLIER;
+    document.getElementById('trendRefreshCostHint').textContent =
+      `Estimated cost: ~${formatCost(low)}\u2013${formatCost(high)} (varies with how many searches it takes)`;
+  })();
+})();
+</script>
