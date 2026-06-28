@@ -437,10 +437,20 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   // Paste your own values here — these two are SAFE to expose client-side
   // by design (unlike the Anthropic key or the Supabase service_role key,
   // which must only ever live in Vercel's server-side environment variables).
-  const SUPABASE_URL = 'https://guxawmliwemssbgfblrl.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_Ox3XOFrNhsvMDW3kGtOnTg_qZykFeks';
+  const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+  const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE';
 
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let sb;
+  try {
+    if (SUPABASE_URL.includes('PASTE_YOUR') || SUPABASE_ANON_KEY.includes('PASTE_YOUR')) {
+      throw new Error('Supabase URL/key have not been filled in yet — replace the two placeholder lines near the top of the script.');
+    }
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (err) {
+    document.getElementById('authView').innerHTML =
+      '<p style="color:#B23A2E; text-align:center; font-size:13px;">Setup error: ' + err.message + '</p>';
+    throw err;
+  }
 
   const authView = document.getElementById('authView');
   const accountBar = document.getElementById('accountBar');
