@@ -1,7 +1,7 @@
 // Proves the Supabase connection works, without needing any tables to
-// exist yet. Hitting the REST API's root endpoint with just the URL and
-// anon key returns 200 if (and only if) both are valid and Supabase is
-// reachable — same idea as api/health.js, one level deeper.
+// exist yet. Sends the key in both the apikey header and as an
+// Authorization Bearer token — Supabase's gateway sometimes expects both,
+// and sending the same value in both is always safe.
 module.exports = async (req, res) => {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
@@ -15,10 +15,18 @@ module.exports = async (req, res) => {
 
   try {
     const response = await fetch(`${url}/rest/v1/`, {
-      headers: { apikey: key }
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`
+      }
     });
     if (!response.ok) {
-      return res.status(502).json({ ok: false, error: `Supabase responded with status ${response.status}` });
+      const body = await response.text();
+      return res.status(502).json({
+        ok: false,
+        error: `Supabase responded with status ${response.status}`,
+        detail: body.slice(0, 300)
+      });
     }
     res.status(200).json({ ok: true, message: 'Supabase is reachable', timestamp: new Date().toISOString() });
   } catch (err) {
