@@ -54,17 +54,38 @@
     <h1>ZAP Trend Curator</h1>
     <p>This page is live proof your GitHub repo is connected to Vercel and deploying correctly.</p>
     <button id="checkBtn">Check backend connection</button>
+    <button id="checkDbBtn" style="margin-left:8px; background:transparent; border:1px solid #B6592F; color:#B6592F;">Check Supabase connection</button>
     <div id="result"></div>
   </div>
 
   <script>
     document.getElementById('checkBtn').addEventListener('click', async () => {
       const result = document.getElementById('result');
+      result.style.color = '#4B7A53';
       result.textContent = 'Checking...';
       try {
         const res = await fetch('/api/health');
         const data = await res.json();
         result.textContent = data.ok ? 'Connected — backend responded at ' + data.timestamp : 'Something went wrong.';
+      } catch (err) {
+        result.style.color = '#B23A2E';
+        result.textContent = 'Could not reach the backend: ' + err.message;
+      }
+    });
+
+    document.getElementById('checkDbBtn').addEventListener('click', async () => {
+      const result = document.getElementById('result');
+      result.style.color = '#4B7A53';
+      result.textContent = 'Checking...';
+      try {
+        const res = await fetch('/api/db-health');
+        const data = await res.json();
+        if (data.ok) {
+          result.textContent = 'Supabase connected — checked at ' + data.timestamp;
+        } else {
+          result.style.color = '#B23A2E';
+          result.textContent = 'Supabase check failed: ' + data.error;
+        }
       } catch (err) {
         result.style.color = '#B23A2E';
         result.textContent = 'Could not reach the backend: ' + err.message;
