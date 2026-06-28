@@ -62,8 +62,8 @@ module.exports = async (req, res) => {
         supabase_user_id: userData.user.id,
         credit_amount_usd: String(selected.amountUsd)
       },
-      success_url: `${origin}/?purchase=success`,
-      cancel_url: `${origin}/?purchase=cancelled`
+      success_url: `${origin}/app.html?purchase=success`,
+      cancel_url: `${origin}/app.html?purchase=cancelled`
     });
 
     res.status(200).json({ url: session.url });
