@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ZAP Trend Curator — AI photo selection for wedding photographers</title>
+<title>ZAP Trend Curator: AI photo selection for wedding photographers</title>
 <meta name="description" content="Upload a gallery. ZAP picks the strongest shots, builds a carousel with a real story arc, and writes a caption that matches what's actually trending.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -243,7 +243,7 @@
     <div>
       <p class="eyebrow">For wedding photographers</p>
       <h1>Stop scrolling through 800&nbsp;photos at midnight.</h1>
-      <p>Upload a gallery. ZAP picks the strongest shots, builds a carousel with a real story arc, and writes a caption that matches what's actually resonating right now — not what was trending six months ago.</p>
+      <p>Upload a gallery. ZAP picks the strongest shots, builds a carousel with a real story arc, and writes a caption that matches what's actually resonating right now, not what was trending six months ago.</p>
       <div class="cta-row">
         <a class="cta-primary" href="app.html">Start free</a>
         <span class="cta-note">No credit card required</span>
@@ -267,7 +267,7 @@
       <div class="step">
         <p class="step-num">01</p>
         <h3>Upload your gallery</h3>
-        <p>Drop in the photos from a shoot — hundreds at a time, straight from the gallery you already deliver.</p>
+        <p>Drop in the photos from a shoot, hundreds at a time, straight from the gallery you already deliver.</p>
       </div>
       <div class="step">
         <p class="step-num">02</p>
@@ -282,7 +282,7 @@
       <div class="step">
         <p class="step-num">04</p>
         <h3>Post with confidence</h3>
-        <p>An ordered carousel and a caption ready to go — nothing left to second-guess at midnight.</p>
+        <p>An ordered carousel and a caption ready to go, with nothing left to second-guess at midnight.</p>
       </div>
     </div>
   </div>
@@ -297,11 +297,11 @@
       </div>
       <div class="feature">
         <h3>Trend-aware, refreshed on demand</h3>
-        <p>One click runs a real web search for what's currently working in wedding content, then scores your photos against it — not a fixed idea of "trending" from whenever the model was last updated.</p>
+        <p>One click runs a real web search for what's currently working in wedding content, then scores your photos against it, not a fixed idea of "trending" from whenever the model was last updated.</p>
       </div>
       <div class="feature">
         <h3>Pay only for what you use</h3>
-        <p>See the estimated cost before you run anything. No subscription, no seat licenses — just credits that go down when you actually use the AI, and a clear log of exactly what was charged for.</p>
+        <p>See the estimated cost before you run anything. No subscription, no seat licenses. Just credits that go down when you actually use the AI, with a clear log of exactly what was charged for.</p>
       </div>
     </div>
   </div>
@@ -310,44 +310,68 @@
 <div class="pricing-strip">
   <div class="wrap">
     <h2>Every account starts with a free credit</h2>
-    <p>Enough to try real scoring and captioning before you spend anything. After that, top up anytime — no subscriptions, no surprises.</p>
+    <p>Enough to try real scoring and captioning before you spend anything. After that, top up anytime. No subscriptions, no surprises.</p>
     <a class="cta-primary" href="app.html">Start free</a>
   </div>
 </div>
 
 <footer>
-  ZAP Trend Curator
+  ZAP Trend Curator &copy; 2026 &middot; Powered by ZAP Group of Companies
 </footer>
 
 <script>
   // The signature moment: a gallery of muted "photo" tiles where the AI's
-  // picks reveal themselves in sequence — the same selection logic the
+  // picks reveal themselves in sequence, the same selection logic the
   // tool actually runs, shown as a single orchestrated moment rather than
   // a scattered set of hover effects.
+  //
+  // Tiles are styled as soft, out-of-focus light rather than flat color
+  // blocks (real wedding photos can't be used here without licensing them
+  // and the people in them consenting to appear on a commercial site —
+  // swap in actual portfolio shots later and this still works the same way).
   (function () {
-    const TILE_COLORS = [
-      'linear-gradient(135deg, #E8C9A0, #D4A574)',
-      'linear-gradient(135deg, #D9B8B0, #C99891)',
-      'linear-gradient(135deg, #748a74, #5d7a5d)',
-      'linear-gradient(135deg, #3a4255, #262c3a)',
-      'linear-gradient(135deg, #F0E4D4, #E0D0BC)',
-      'linear-gradient(135deg, #C97B5A, #A85D3F)',
-      'linear-gradient(135deg, #5c6e5c, #455645)',
-      'linear-gradient(135deg, #D4C4A8, #BFA980)',
-      'linear-gradient(135deg, #7d6262, #604848)',
-      'linear-gradient(135deg, #E5D5C0, #D4C0A0)',
-      'linear-gradient(135deg, #4a5b6c, #364450)',
-      'linear-gradient(135deg, #BFA0A0, #A88080)',
-      'linear-gradient(135deg, #6c7d6c, #546454)',
-      'linear-gradient(135deg, #E8D4C0, #D9C0A0)'
+    const TILE_BASES = [
+      ['#E8C9A0', '#D4A574'],
+      ['#D9B8B0', '#C99891'],
+      ['#748a74', '#5d7a5d'],
+      ['#3a4255', '#262c3a'],
+      ['#F0E4D4', '#E0D0BC'],
+      ['#C97B5A', '#A85D3F'],
+      ['#5c6e5c', '#455645'],
+      ['#D4C4A8', '#BFA980'],
+      ['#7d6262', '#604848'],
+      ['#E5D5C0', '#D4C0A0'],
+      ['#4a5b6c', '#364450'],
+      ['#BFA0A0', '#A88080'],
+      ['#6c7d6c', '#546454'],
+      ['#E8D4C0', '#D9C0A0']
     ];
     const PICKED_INDEXES = [1, 4, 6, 9, 12];
 
+    // Deterministic pseudo-randomness so the layout is stable across
+    // reloads instead of reshuffling every visit.
+    function seeded(seed) {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function bokehBackground([colorA, colorB], seed) {
+      const x1 = 15 + seeded(seed) * 50;
+      const y1 = 10 + seeded(seed + 1) * 35;
+      const x2 = 45 + seeded(seed + 2) * 45;
+      const y2 = 45 + seeded(seed + 3) * 45;
+      const s1 = 22 + seeded(seed + 4) * 16;
+      const s2 = 16 + seeded(seed + 5) * 14;
+      return `radial-gradient(circle at ${x1}% ${y1}%, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0) ${s1}%), `
+        + `radial-gradient(circle at ${x2}% ${y2}%, rgba(255,244,220,0.28) 0%, rgba(255,244,220,0) ${s2}%), `
+        + `linear-gradient(150deg, ${colorA}, ${colorB})`;
+    }
+
     const grid = document.getElementById('selectionGrid');
-    TILE_COLORS.forEach((bg, i) => {
+    TILE_BASES.forEach((colors, i) => {
       const tile = document.createElement('div');
       tile.className = 'tile';
-      tile.style.background = bg;
+      tile.style.background = bokehBackground(colors, i * 3.7 + 1);
       if (PICKED_INDEXES.includes(i)) tile.classList.add('picked');
       grid.appendChild(tile);
     });

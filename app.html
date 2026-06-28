@@ -17,7 +17,7 @@
     --bad: #B23A2E;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; }
+  body { margin: 0; background: var(--bg); min-height: 100vh; }
   #app {
     font-family: 'Inter', sans-serif;
     color: var(--text);
@@ -26,6 +26,14 @@
     line-height: 1.55;
   }
   .wrap { max-width: 920px; margin: 0 auto; }
+  .eyebrow {
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    margin: 0 0 10px;
+  }
   h1 {
     font-family: 'Fraunces', serif;
     font-weight: 500;
@@ -40,12 +48,30 @@
     border-radius: 14px;
     padding: 24px;
     margin-bottom: 22px;
+    box-shadow: 0 1px 2px rgba(42,38,34,0.03), 0 6px 16px rgba(42,38,34,0.04);
   }
   .card h2 {
     font-family: 'Fraunces', serif;
     font-weight: 500;
     font-size: 19px;
     margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    flex-shrink: 0;
   }
   .card .hint { color: var(--text-muted); font-size: 13px; margin: 0 0 16px; }
   textarea {
@@ -279,16 +305,34 @@
   #authStatus { margin-top: 10px; font-size: 13px; color: var(--text-muted); text-align: center; min-height: 18px; }
 
   #accountBar {
+    display: none;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(42,38,34,0.05);
+    padding: 14px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  #accountBar .bar-inner {
     max-width: 920px;
-    margin: 0 auto 8px;
-    padding: 10px 4px;
+    margin: 0 auto;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    flex-wrap: wrap;
     font-size: 13px;
     color: var(--text-muted);
   }
+  #accountBar .bar-brand {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15.5px;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  #accountBar .bar-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   #accountBar strong { color: var(--text); }
   #accountBar button {
     background: transparent;
@@ -299,7 +343,9 @@
     font-size: 12.5px;
     cursor: pointer;
     color: var(--accent-dark);
+    transition: border-color 0.15s ease, color 0.15s ease;
   }
+  #accountBar button:hover { border-color: var(--accent); }
   #buyCreditsGroup { display: flex; align-items: center; gap: 6px; }
   .buy-btn { background: var(--accent) !important; color: #fff !important; border: none !important; font-weight: 600; }
   .buy-btn:hover { background: var(--accent-dark) !important; }
@@ -329,17 +375,22 @@
   <div id="authStatus"></div>
 </div>
 
-<div id="accountBar" style="display:none;">
-  <span>Logged in as <strong id="accountEmail"></strong></span>
-  <span>Balance: <strong id="accountBalance">...</strong></span>
-  <span id="buyCreditsGroup">
-    Add credits:
-    <button class="buy-btn" data-pack="small">$5</button>
-    <button class="buy-btn" data-pack="medium">$20</button>
-    <button class="buy-btn" data-pack="large">$50</button>
-  </span>
-  <button id="activityToggleBtn">Recent activity</button>
-  <button id="accountLogoutBtn">Log out</button>
+<div id="accountBar">
+  <div class="bar-inner">
+    <span class="bar-brand">ZAP Trend Curator</span>
+    <div class="bar-controls">
+      <span>Logged in as <strong id="accountEmail"></strong></span>
+      <span>Balance: <strong id="accountBalance">...</strong></span>
+      <span id="buyCreditsGroup">
+        Add credits:
+        <button class="buy-btn" data-pack="small">$5</button>
+        <button class="buy-btn" data-pack="medium">$20</button>
+        <button class="buy-btn" data-pack="large">$50</button>
+      </span>
+      <button id="activityToggleBtn">Recent activity</button>
+      <button id="accountLogoutBtn">Log out</button>
+    </div>
+  </div>
 </div>
 <div id="purchaseStatus" style="display:none; max-width:920px; margin:0 auto 8px; text-align:right; font-size:12.5px;"></div>
 
@@ -347,14 +398,15 @@
 
 <div id="app" style="display:none;">
   <div class="wrap">
-    <h1>Carousel selection prototype</h1>
-    <p class="sub">Upload a sample batch of photos from a gallery. The engine scores each one, drops near-duplicates, picks the strongest single shot, and assembles an ordered carousel set.</p>
+    <p class="eyebrow">ZAP Trend Curator</p>
+    <h1>Gallery Curation</h1>
+    <p class="sub">Upload your gallery and let AI select the strongest shots, build a trend-aware carousel, and prepare captions ready to post.</p>
 
     <div class="card">
       <h2>Trend priorities</h2>
       <p class="hint">What the AI weighs when judging "trend fit." Refresh this from real current trends instead of editing it by hand, or tweak it yourself below.</p>
       <textarea id="trendBrief">Candid, unposed moments over stiff formal poses
-Documentary storytelling — real interactions over staged setups
+Documentary storytelling, real interactions over staged setups
 Behind-the-scenes / in-between moments (quiet nerves, laughter, getting ready)
 Raw, "messy" detail shots over overly styled flat-lays
 Vertical, mobile-first framing
@@ -370,8 +422,8 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     </div>
 
     <div class="card">
-      <h2>1. Upload sample photos</h2>
-      <p class="hint">Built to handle a full gallery — up to 800 photos. Large batches use more browser memory; if things feel sluggish, try a 100-150 photo subset first.</p>
+      <h2><span class="step-badge">1</span> Upload your photos</h2>
+      <p class="hint">Built to handle a full gallery, up to 800 photos. Large batches use more browser memory; if things feel sluggish, try a 100-150 photo subset first.</p>
       <input type="file" id="fileInput" accept="image/*" multiple>
       <div id="uploadCount" class="count-line"></div>
       <div class="bulk-row" id="bulkRow" style="display:none;">
@@ -386,7 +438,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     </div>
 
     <div class="card" id="analyzeCard" style="display:none;">
-      <h2>2. Run AI scoring</h2>
+      <h2><span class="step-badge">2</span> Run AI scoring</h2>
       <p class="hint">Scores technical quality, aesthetic strength, trend fit, and scroll-stopping potential for every checked photo, and tags its moment type.</p>
       <div class="row">
         <button id="runBtn">Run AI analysis on checked photos</button>
@@ -395,7 +447,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
       <div class="row" style="margin-top:12px;">
         <span class="progress-text">Parallel requests:</span>
         <input type="number" id="concurrencyInput" min="1" max="8" value="2" style="width:48px; padding:6px 8px; border:1px solid var(--border); border-radius:6px;">
-        <span class="progress-text" style="color:var(--text-muted);">(2 is a safer default — this account hit rate limits at 4; raise it cautiously if you don't see failures)</span>
+        <span class="progress-text" style="color:var(--text-muted);">(2 is a safer default since this account hit rate limits at 4; raise it cautiously if you don't see failures)</span>
       </div>
       <div id="estimateText" class="estimate-text"></div>
       <div id="progressWrap" style="display:none; margin-top:14px;">
@@ -465,13 +517,13 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   // Paste your own values here — these two are SAFE to expose client-side
   // by design (unlike the Anthropic key or the Supabase service_role key,
   // which must only ever live in Vercel's server-side environment variables).
-  const SUPABASE_URL = 'https://guxawmliwemssbgfblrl.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_Ox3XOFrNhsvMDW3kGtOnTg_qZykFeks';
+  const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+  const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE';
 
   let sb;
   try {
     if (SUPABASE_URL.includes('PASTE_YOUR') || SUPABASE_ANON_KEY.includes('PASTE_YOUR')) {
-      throw new Error('Supabase URL/key have not been filled in yet — replace the two placeholder lines near the top of the script.');
+      throw new Error('Supabase URL/key have not been filled in yet. Replace the two placeholder lines near the top of the script.');
     }
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (err) {
@@ -567,7 +619,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     purchaseStatus.style.display = 'block';
 
     if (purchase === 'success') {
-      purchaseStatus.textContent = 'Payment received — updating your balance...';
+      purchaseStatus.textContent = 'Payment received. Updating your balance...';
       for (let attempt = 0; attempt < 4; attempt++) {
         await sleep(1500);
         await refreshBalanceDisplay();
@@ -576,7 +628,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
       refreshActivityIfOpen();
       setTimeout(() => { purchaseStatus.style.display = 'none'; }, 4000);
     } else if (purchase === 'cancelled') {
-      purchaseStatus.textContent = 'Checkout cancelled — no charge was made.';
+      purchaseStatus.textContent = 'Checkout cancelled. No charge was made.';
       setTimeout(() => { purchaseStatus.style.display = 'none'; }, 4000);
     }
 
@@ -586,7 +638,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
 
   async function showLoggedIn(email) {
     authView.style.display = 'none';
-    accountBar.style.display = 'flex';
+    accountBar.style.display = 'block';
     appEl.style.display = 'block';
     accountEmail.textContent = email;
     await refreshBalanceDisplay();
@@ -938,8 +990,8 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
 
     const alreadyScoredCount = photos.filter(p => p.ai).length;
     uploadCount.textContent = `Loaded ${photos.length} photo(s).` +
-      (truncated ? ` (capped at ${MAX_FILES} for this prototype)` : '') +
-      (files.length > 600 ? ' Large batch — this uses significant memory; if your browser feels sluggish, try a smaller subset.' : '') +
+      (truncated ? ` (capped at ${MAX_FILES} photos per batch)` : '') +
+      (files.length > 600 ? ' Large batch: this uses significant memory; if your browser feels sluggish, try a smaller subset.' : '') +
       (alreadyScoredCount > 0 ? ` ${alreadyScoredCount} already scored from the loaded checkpoint.` : '');
 
     bulkRow.style.display = photos.length ? 'flex' : 'none';
@@ -998,7 +1050,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
 
     estimateText.textContent = `${included.length} photo(s) checked` +
       (alreadyDone > 0 ? ` (${alreadyDone} already scored, ${needsScoring.length} new)` : '') +
-      ` — rough estimate at ${concurrency} parallel requests: ~${mins} minute(s). Estimated cost: ~${formatCost(cost)}.`;
+      `. Rough estimate at ${concurrency} parallel requests: ~${mins} minute(s). Estimated cost: ~${formatCost(cost)}.`;
   }
 
   function saveProgress() {
@@ -1030,9 +1082,9 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
         if (photos.length) renderThumbs();
         recomputeEstimate();
         checkpointStatus.textContent = `Loaded ${arr.length} scored photo(s) from checkpoint` +
-          (photos.length ? `, matched ${matched} against currently uploaded photos.` : ' — upload the same photos to apply them.');
+          (photos.length ? `, matched ${matched} against currently uploaded photos.` : '. Upload the same photos to apply them.');
       } catch (err) {
-        checkpointStatus.textContent = 'Could not read that checkpoint file — make sure it is the .json file saved by "Save progress".';
+        checkpointStatus.textContent = 'Could not read that checkpoint file. Make sure it is the .json file saved by "Save progress".';
       }
     };
     reader.readAsText(file);
@@ -1053,7 +1105,7 @@ Score the photo 0-10 on each of these:
 Also classify moment_type as exactly one of: getting_ready, candid, ceremony, portrait, reception, detail, other.
 Add a one-sentence note (max 15 words) explaining the scores.
 
-Your reply must be raw JSON only — no markdown, no code fences, no text before or after — in exactly this shape:
+Your reply must be raw JSON only. No markdown, no code fences, no text before or after, in exactly this shape:
 {"technical_quality": number, "aesthetic_score": number, "trend_fit": number, "hook_potential": number, "moment_type": string, "notes": string}`;
   }
 
@@ -1086,8 +1138,8 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
     if (!response.ok) {
       let detail = '';
       try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
-      if (response.status === 402) throw new Error('Out of credits — please add more to keep scoring.');
-      if (response.status === 401) throw new Error('Session expired — please log in again.');
+      if (response.status === 402) throw new Error('Out of credits. Please add more to keep scoring.');
+      if (response.status === 401) throw new Error('Session expired. Please log in again.');
       const err = new Error(`API request failed: ${response.status} ${detail}`);
       if (response.status === 429) {
         // Pause every parallel slot, not just this one — a concurrent-request
@@ -1204,7 +1256,7 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
   async function runAnalysis() {
     const included = photos.filter(p => p.included);
     if (included.length === 0) {
-      errorLine.innerHTML = '<div class="error-line">No photos selected — check at least one box above.</div>';
+      errorLine.innerHTML = '<div class="error-line">No photos selected. Check at least one box above.</div>';
       return;
     }
     const needsScoring = included.filter(p => !p.ai);
@@ -1240,7 +1292,7 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
     const scored = photos.filter(p => p.included && p.ai).map(toScoredShape);
     progressText.textContent = `Done. ${scored.length} of ${included.length} photo(s) scored.`;
     if (failures > 0) {
-      errorLine.innerHTML = `<div class="error-line">${failures} photo(s) failed to score after 3 attempts and were excluded — your progress on the rest is saved below if you'd like to keep it before retrying.</div>`;
+      errorLine.innerHTML = `<div class="error-line">${failures} photo(s) failed to score after 3 attempts and were excluded. Your progress on the rest is saved below if you'd like to keep it before retrying.</div>`;
     }
 
     renderThumbs(); // refresh "scored" badges
@@ -1249,7 +1301,7 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
 
     dedupedPool = dedupeNearDuplicates(scored);
     if (dedupedPool.length === 0) {
-      errorLine.innerHTML += '<div class="error-line">No photos scored successfully — nothing to show.</div>';
+      errorLine.innerHTML += '<div class="error-line">No photos scored successfully. Nothing to show.</div>';
       runBtn.disabled = false;
       return;
     }
@@ -1392,8 +1444,8 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
     if (!response.ok) {
       let detail = '';
       try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
-      if (response.status === 402) throw new Error('Out of credits — please add more to generate a caption.');
-      if (response.status === 401) throw new Error('Session expired — please log in again.');
+      if (response.status === 402) throw new Error('Out of credits. Please add more to generate a caption.');
+      if (response.status === 401) throw new Error('Session expired. Please log in again.');
       throw new Error(`API request failed: ${response.status} ${detail}`);
     }
     const data = await response.json();
@@ -1418,7 +1470,7 @@ What the photo shows: ${currentBest.notes || ''}
 Trend priorities this studio cares about:
 ${trendBrief}
 
-2-4 warm, authentic sentences — avoid generic stock-photo language and cliches. End with a separate line of 6-10 relevant hashtags.`;
+2-4 warm, authentic sentences. Avoid generic stock-photo language and cliches. End with a separate line of 6-10 relevant hashtags.`;
     try {
       const caption = await callCaptionAPI([
         { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentBest.base64 } },
@@ -1440,12 +1492,12 @@ ${trendBrief}
     carouselCaptionWrap.style.display = 'block';
     carouselCaptionText.value = 'Writing a caption...';
     const trendBrief = document.getElementById('trendBrief').value;
-    const introPrompt = `Write a short Instagram caption for a ${currentCarouselOrdered.length}-photo carousel post from a wedding, posted by a professional wedding photography studio, in first person plural studio voice. The photos are shown below in the order they'll appear in the carousel — write one caption that captures the overall arc, not a description of each slide individually.
+    const introPrompt = `Write a short Instagram caption for a ${currentCarouselOrdered.length}-photo carousel post from a wedding, posted by a professional wedding photography studio, in first person plural studio voice. The photos are shown below in the order they'll appear in the carousel. Write one caption that captures the overall arc, not a description of each slide individually.
 
 Trend priorities this studio cares about:
 ${trendBrief}
 
-2-4 warm, authentic sentences — avoid generic stock-photo language and cliches. End with a separate line of 6-10 relevant hashtags.`;
+2-4 warm, authentic sentences. Avoid generic stock-photo language and cliches. End with a separate line of 6-10 relevant hashtags.`;
     const content = [{ type: 'text', text: introPrompt }];
     currentCarouselOrdered.forEach((p, i) => {
       content.push({ type: 'text', text: `Photo ${i + 1} (${p.momentType}):` });
@@ -1470,10 +1522,10 @@ ${trendBrief}
         statusEl.textContent = 'Copied';
         setTimeout(() => { statusEl.textContent = ''; }, 1500);
       }).catch(() => {
-        statusEl.textContent = 'Text selected — press Ctrl+C / Cmd+C to copy.';
+        statusEl.textContent = 'Text selected. Press Ctrl+C / Cmd+C to copy.';
       });
     } else {
-      statusEl.textContent = 'Text selected — press Ctrl+C / Cmd+C to copy.';
+      statusEl.textContent = 'Text selected. Press Ctrl+C / Cmd+C to copy.';
     }
   }
 
@@ -1511,7 +1563,7 @@ ${trendBrief}
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const prompt = `Search for what is currently trending in wedding photography and wedding content on Instagram and TikTok, as of today (${today}).` +
       (focus ? ` Pay particular attention to relevance for: ${focus}.` : '') +
-      `\n\nCondense your findings into a short list of current content and style trends a wedding photography studio should weigh when picking and posting photos — concrete and actionable (e.g. "candid over posed", "vertical framing", "raw behind-the-scenes paired with the polished shot"), not vague themes.\n\nPut the final list, and only the list, between these exact markers, one trend per line inside them, short phrases under 12 words each, 6-10 lines, no bullet symbols, no numbering:\n<<<TRENDS>>>\n(your lines here)\n<<<END>>>\n\nYou can research and reason before the markers, but nothing should appear after <<<END>>>.`;
+      `\n\nCondense your findings into a short list of current content and style trends a wedding photography studio should weigh when picking and posting photos. Be concrete and actionable (e.g. "candid over posed", "vertical framing", "raw behind-the-scenes paired with the polished shot"), not vague themes.\n\nPut the final list, and only the list, between these exact markers, one trend per line inside them, short phrases under 12 words each, 6-10 lines, no bullet symbols, no numbering:\n<<<TRENDS>>>\n(your lines here)\n<<<END>>>\n\nYou can research and reason before the markers, but nothing should appear after <<<END>>>.`;
 
     let lastErr;
     for (let attempt = 1; attempt <= 2; attempt++) {
@@ -1533,8 +1585,8 @@ ${trendBrief}
         if (!response.ok) {
           let detail = '';
           try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
-          if (response.status === 402) throw new Error('Out of credits — please add more to refresh trends.');
-          if (response.status === 401) throw new Error('Session expired — please log in again.');
+          if (response.status === 402) throw new Error('Out of credits. Please add more to refresh trends.');
+          if (response.status === 401) throw new Error('Session expired. Please log in again.');
           throw new Error(`API request failed: ${response.status} ${detail}`);
         }
         const data = await response.json();
