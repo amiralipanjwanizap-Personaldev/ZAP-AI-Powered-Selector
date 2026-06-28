@@ -2,5 +2,15 @@
   "name": "zap-trend-curator",
   "version": "1.0.0",
   "private": true,
-  "description": "ZAP Trend Curator — AI-assisted photo selection and trend-aware captioning"
+  "description": "ZAP Trend Curator — AI-assisted photo selection and trend-aware captioning",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2"
+  }
 }

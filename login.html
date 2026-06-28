@@ -79,6 +79,7 @@
 
     <div id="loggedInView">
       <p>Logged in as <strong id="loggedInEmail"></strong></p>
+      <p>Balance: <strong id="balanceDisplay">...</strong></p>
       <button id="logoutBtn">Log out</button>
     </div>
 
@@ -89,8 +90,8 @@
     // ── Paste your own values here — these two are SAFE to expose in
     // client-side code by design (unlike the Anthropic key or a Supabase
     // service_role/secret key, which must only ever live server-side).
-    const SUPABASE_URL = 'https://guxawmliwemssbgfblrl.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_Ox3XOFrNhsvMDW3kGtOnTg_qZykFeks';
+    const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+    const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE';
 
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -98,12 +99,20 @@
     const loggedOutView = document.getElementById('loggedOutView');
     const loggedInView = document.getElementById('loggedInView');
     const loggedInEmail = document.getElementById('loggedInEmail');
+    const balanceDisplay = document.getElementById('balanceDisplay');
     const status = document.getElementById('status');
 
-    function showLoggedIn(email) {
+    async function showLoggedIn(email) {
       loggedOutView.style.display = 'none';
       loggedInView.style.display = 'block';
       loggedInEmail.textContent = email;
+      balanceDisplay.textContent = 'loading...';
+      const { data, error } = await sb.from('credits').select('balance_usd').single();
+      if (error) {
+        balanceDisplay.textContent = 'could not load (' + error.message + ')';
+      } else {
+        balanceDisplay.textContent = '$' + Number(data.balance_usd).toFixed(2);
+      }
     }
 
     function showLoggedOut() {

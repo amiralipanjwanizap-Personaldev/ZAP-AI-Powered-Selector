@@ -2,6 +2,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #F7F3EC;
@@ -242,9 +243,81 @@
   }
   .caption-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
   .copy-status { font-size: 12px; color: var(--good); }
+
+  #authView {
+    max-width: 320px;
+    margin: 60px auto;
+    padding: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  #authView h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 24px; margin: 0 0 18px; text-align: center; }
+  #authView input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+  #authView button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  #authSignupBtn { background: var(--accent); color: #fff; }
+  #authLoginBtn { background: transparent; border: 1px solid var(--accent); color: var(--accent-dark); }
+  #authStatus { margin-top: 10px; font-size: 13px; color: var(--text-muted); text-align: center; min-height: 18px; }
+
+  #accountBar {
+    max-width: 920px;
+    margin: 0 auto 8px;
+    padding: 10px 4px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  #accountBar strong { color: var(--text); }
+  #accountBar button {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    cursor: pointer;
+    color: var(--accent-dark);
+  }
 </style>
 
-<div id="app">
+<div id="authView">
+  <h1>ZAP Trend Curator</h1>
+  <input type="email" id="authEmail" placeholder="Email">
+  <input type="password" id="authPassword" placeholder="Password (min 6 characters)">
+  <button id="authSignupBtn">Sign up</button>
+  <button id="authLoginBtn">Log in</button>
+  <div id="authStatus"></div>
+</div>
+
+<div id="accountBar" style="display:none;">
+  <span>Logged in as <strong id="accountEmail"></strong></span>
+  <span>Balance: <strong id="accountBalance">...</strong></span>
+  <button id="accountLogoutBtn">Log out</button>
+</div>
+
+<div id="app" style="display:none;">
   <div class="wrap">
     <h1>Carousel selection prototype</h1>
     <p class="sub">Upload a sample batch of photos from a gallery. The engine scores each one, drops near-duplicates, picks the strongest single shot, and assembles an ordered carousel set.</p>
@@ -360,6 +433,75 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
 
 <script>
 (function () {
+  // ── Auth gate ──
+  // Paste your own values here — these two are SAFE to expose client-side
+  // by design (unlike the Anthropic key or the Supabase service_role key,
+  // which must only ever live in Vercel's server-side environment variables).
+  const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+  const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE';
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const authView = document.getElementById('authView');
+  const accountBar = document.getElementById('accountBar');
+  const appEl = document.getElementById('app');
+  const accountEmail = document.getElementById('accountEmail');
+  const accountBalance = document.getElementById('accountBalance');
+  const authStatus = document.getElementById('authStatus');
+
+  async function getAccessToken() {
+    const { data } = await sb.auth.getSession();
+    return data.session ? data.session.access_token : null;
+  }
+
+  async function refreshBalanceDisplay() {
+    const { data, error } = await sb.from('credits').select('balance_usd').single();
+    accountBalance.textContent = error ? 'unavailable' : '$' + Number(data.balance_usd).toFixed(2);
+  }
+
+  async function showLoggedIn(email) {
+    authView.style.display = 'none';
+    accountBar.style.display = 'flex';
+    appEl.style.display = 'block';
+    accountEmail.textContent = email;
+    await refreshBalanceDisplay();
+  }
+
+  function showLoggedOut() {
+    authView.style.display = 'block';
+    accountBar.style.display = 'none';
+    appEl.style.display = 'none';
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) showLoggedIn(data.session.user.email);
+    else showLoggedOut();
+  });
+
+  document.getElementById('authSignupBtn').addEventListener('click', async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    authStatus.textContent = 'Signing up...';
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) authStatus.textContent = 'Sign up failed: ' + error.message;
+    else if (data.user && !data.session) authStatus.textContent = 'Check your email to confirm your account, then log in.';
+    else { authStatus.textContent = ''; showLoggedIn(data.user.email); }
+  });
+
+  document.getElementById('authLoginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    authStatus.textContent = 'Logging in...';
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) authStatus.textContent = 'Login failed: ' + error.message;
+    else { authStatus.textContent = ''; showLoggedIn(data.user.email); }
+  });
+
+  document.getElementById('accountLogoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    showLoggedOut();
+  });
+
   const MAX_FILES = 800;
   const HASH_DIST_THRESHOLD = 6;
   const MOMENT_ARC_ORDER = {
@@ -793,9 +935,12 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
     const waitMs = globalBackoffUntil - Date.now();
     if (waitMs > 0) await sleep(waitMs);
 
+    const accessToken = await getAccessToken();
+    if (!accessToken) throw new Error('Not logged in.');
+
     const response = await fetch('/api/anthropic-proxy', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
@@ -808,12 +953,15 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
               { type: 'text', text: buildPrompt(trendBrief) }
             ]
           }
-        ]
+        ],
+        zap_meta: { job_type: 'scoring' }
       })
     });
     if (!response.ok) {
       let detail = '';
       try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
+      if (response.status === 402) throw new Error('Out of credits — please add more to keep scoring.');
+      if (response.status === 401) throw new Error('Session expired — please log in again.');
       const err = new Error(`API request failed: ${response.status} ${detail}`);
       if (response.status === 429) {
         // Pause every parallel slot, not just this one — a concurrent-request
@@ -825,6 +973,7 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
       throw err;
     }
     const data = await response.json();
+    if (data.zap_new_balance !== undefined) accountBalance.textContent = '$' + Number(data.zap_new_balance).toFixed(2);
     const textBlock = (data.content || []).find(c => c.type === 'text');
     if (!textBlock) throw new Error('No text response from model');
     const parsed = extractJson(textBlock.text);
@@ -1098,23 +1247,30 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
     return t;
   }
 
-  async function callCaptionAPI(content) {
+  async function callCaptionAPI(content, jobType) {
+    const accessToken = await getAccessToken();
+    if (!accessToken) throw new Error('Not logged in.');
+
     const response = await fetch('/api/anthropic-proxy', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: 'Respond with only the caption text. No preamble, no surrounding quotation marks, no markdown formatting.',
-        messages: [{ role: 'user', content }]
+        messages: [{ role: 'user', content }],
+        zap_meta: { job_type: jobType || 'caption' }
       })
     });
     if (!response.ok) {
       let detail = '';
       try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
+      if (response.status === 402) throw new Error('Out of credits — please add more to generate a caption.');
+      if (response.status === 401) throw new Error('Session expired — please log in again.');
       throw new Error(`API request failed: ${response.status} ${detail}`);
     }
     const data = await response.json();
+    if (data.zap_new_balance !== undefined) accountBalance.textContent = '$' + Number(data.zap_new_balance).toFixed(2);
     const textBlock = (data.content || []).find(c => c.type === 'text');
     if (!textBlock) throw new Error('No text response from model');
     return cleanCaptionText(textBlock.text);
@@ -1139,7 +1295,7 @@ ${trendBrief}
       const caption = await callCaptionAPI([
         { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentBest.base64 } },
         { type: 'text', text: prompt }
-      ]);
+      ], 'caption_single');
       bestCaptionText.value = caption;
     } catch (err) {
       bestCaptionText.value = '';
@@ -1168,7 +1324,7 @@ ${trendBrief}
       content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: p.base64 } });
     });
     try {
-      const caption = await callCaptionAPI(content);
+      const caption = await callCaptionAPI(content, 'caption_carousel');
       carouselCaptionText.value = caption;
     } catch (err) {
       carouselCaptionText.value = '';
@@ -1232,22 +1388,29 @@ ${trendBrief}
     let lastErr;
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
+        const accessToken = await getAccessToken();
+        if (!accessToken) throw new Error('Not logged in.');
+
         const response = await fetch('/api/anthropic-proxy', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
           body: JSON.stringify({
             model: 'claude-sonnet-4-6',
             max_tokens: 2000,
             tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-            messages: [{ role: 'user', content: prompt }]
+            messages: [{ role: 'user', content: prompt }],
+            zap_meta: { job_type: 'trend_refresh' }
           })
         });
         if (!response.ok) {
           let detail = '';
           try { detail = JSON.stringify(await response.json()); } catch (e) { /* ignore */ }
+          if (response.status === 402) throw new Error('Out of credits — please add more to refresh trends.');
+          if (response.status === 401) throw new Error('Session expired — please log in again.');
           throw new Error(`API request failed: ${response.status} ${detail}`);
         }
         const data = await response.json();
+        if (data.zap_new_balance !== undefined) accountBalance.textContent = '$' + Number(data.zap_new_balance).toFixed(2);
         const combined = (data.content || [])
           .filter(c => c.type === 'text')
           .map(c => c.text)
