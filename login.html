@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZAP Trend Curator — Login</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F7F3EC;
+    font-family: 'Inter', sans-serif;
+    color: #2A2622;
+  }
+  .card {
+    width: 320px;
+    padding: 36px;
+    background: #fff;
+    border: 1px solid #E5DDD0;
+    border-radius: 14px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 24px;
+    margin: 0 0 18px;
+    text-align: center;
+  }
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #E5DDD0;
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+  button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  #signupBtn { background: #B6592F; color: #fff; }
+  #loginBtn { background: transparent; border: 1px solid #B6592F; color: #B6592F; }
+  #logoutBtn { background: #6B6259; color: #fff; }
+  #status {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #6B6259;
+    min-height: 20px;
+    text-align: center;
+  }
+  #loggedInView { display: none; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>ZAP Trend Curator</h1>
+
+    <div id="loggedOutView">
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password (min 6 characters)">
+      <button id="signupBtn">Sign up</button>
+      <button id="loginBtn">Log in</button>
+    </div>
+
+    <div id="loggedInView">
+      <p>Logged in as <strong id="loggedInEmail"></strong></p>
+      <button id="logoutBtn">Log out</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // ── Paste your own values here — these two are SAFE to expose in
+    // client-side code by design (unlike the Anthropic key or a Supabase
+    // service_role/secret key, which must only ever live server-side).
+    const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+    const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE';
+
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const loggedOutView = document.getElementById('loggedOutView');
+    const loggedInView = document.getElementById('loggedInView');
+    const loggedInEmail = document.getElementById('loggedInEmail');
+    const status = document.getElementById('status');
+
+    function showLoggedIn(email) {
+      loggedOutView.style.display = 'none';
+      loggedInView.style.display = 'block';
+      loggedInEmail.textContent = email;
+    }
+
+    function showLoggedOut() {
+      loggedOutView.style.display = 'block';
+      loggedInView.style.display = 'none';
+    }
+
+    // Restores the session automatically if the user already logged in
+    // before (supabase-js persists this in the browser by default).
+    sb.auth.getSession().then(({ data }) => {
+      if (data.session) showLoggedIn(data.session.user.email);
+    });
+
+    document.getElementById('signupBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      status.textContent = 'Signing up...';
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) {
+        status.textContent = 'Sign up failed: ' + error.message;
+      } else if (data.user && !data.session) {
+        status.textContent = 'Check your email to confirm your account, then log in.';
+      } else {
+        status.textContent = '';
+        showLoggedIn(data.user.email);
+      }
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      status.textContent = 'Logging in...';
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        status.textContent = 'Login failed: ' + error.message;
+      } else {
+        status.textContent = '';
+        showLoggedIn(data.user.email);
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await sb.auth.signOut();
+      showLoggedOut();
+      status.textContent = '';
+    });
+  </script>
+</body>
+</html>
