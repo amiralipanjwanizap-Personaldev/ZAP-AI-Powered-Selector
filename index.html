@@ -300,6 +300,20 @@
     cursor: pointer;
     color: var(--accent-dark);
   }
+  #activityPanel {
+    display: none;
+    max-width: 920px;
+    margin: 0 auto 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 12.5px;
+  }
+  #activityPanel table { width: 100%; border-collapse: collapse; }
+  #activityPanel th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+  #activityPanel td { padding: 5px 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+  #activityPanel .cost-cell { text-align: right; font-weight: 600; }
 </style>
 
 <div id="authView">
@@ -314,8 +328,11 @@
 <div id="accountBar" style="display:none;">
   <span>Logged in as <strong id="accountEmail"></strong></span>
   <span>Balance: <strong id="accountBalance">...</strong></span>
+  <button id="activityToggleBtn">Recent activity</button>
   <button id="accountLogoutBtn">Log out</button>
 </div>
+
+<div id="activityPanel"></div>
 
 <div id="app" style="display:none;">
   <div class="wrap">
@@ -437,8 +454,8 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   // Paste your own values here — these two are SAFE to expose client-side
   // by design (unlike the Anthropic key or the Supabase service_role key,
   // which must only ever live in Vercel's server-side environment variables).
-  const SUPABASE_URL = 'https://guxawmliwemssbgfblrl.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_Ox3XOFrNhsvMDW3kGtOnTg_qZykFeks';
+  const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+  const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE';
 
   let sb;
   try {
@@ -467,6 +484,40 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   async function refreshBalanceDisplay() {
     const { data, error } = await sb.from('credits').select('balance_usd').single();
     accountBalance.textContent = error ? 'unavailable' : '$' + Number(data.balance_usd).toFixed(2);
+  }
+
+  async function renderActivity() {
+    const panel = document.getElementById('activityPanel');
+    panel.innerHTML = '<p style="color:var(--text-muted);">Loading...</p>';
+    const { data, error } = await sb.from('job_history').select('*').order('created_at', { ascending: false }).limit(20);
+    if (error) {
+      panel.innerHTML = '<p style="color:#B23A2E;">Could not load activity: ' + error.message + '</p>';
+      return;
+    }
+    if (!data.length) {
+      panel.innerHTML = '<p style="color:var(--text-muted);">No activity yet.</p>';
+      return;
+    }
+    const rows = data.map(row => `
+      <tr>
+        <td>${new Date(row.created_at).toLocaleString()}</td>
+        <td>${row.job_type}</td>
+        <td>${row.summary || ''}</td>
+        <td class="cost-cell">$${Number(row.cost_usd).toFixed(4)}</td>
+      </tr>`).join('');
+    panel.innerHTML = `<table><thead><tr><th>When</th><th>Type</th><th>Detail</th><th>Cost</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+  document.getElementById('activityToggleBtn').addEventListener('click', async () => {
+    const panel = document.getElementById('activityPanel');
+    if (panel.style.display === 'block') { panel.style.display = 'none'; return; }
+    panel.style.display = 'block';
+    await renderActivity();
+  });
+
+  function refreshActivityIfOpen() {
+    const panel = document.getElementById('activityPanel');
+    if (panel.style.display === 'block') renderActivity();
   }
 
   async function showLoggedIn(email) {
@@ -984,6 +1035,7 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
     }
     const data = await response.json();
     if (data.zap_new_balance !== undefined) accountBalance.textContent = '$' + Number(data.zap_new_balance).toFixed(2);
+    refreshActivityIfOpen();
     const textBlock = (data.content || []).find(c => c.type === 'text');
     if (!textBlock) throw new Error('No text response from model');
     const parsed = extractJson(textBlock.text);
@@ -1281,6 +1333,7 @@ Your reply must be raw JSON only — no markdown, no code fences, no text before
     }
     const data = await response.json();
     if (data.zap_new_balance !== undefined) accountBalance.textContent = '$' + Number(data.zap_new_balance).toFixed(2);
+    refreshActivityIfOpen();
     const textBlock = (data.content || []).find(c => c.type === 'text');
     if (!textBlock) throw new Error('No text response from model');
     return cleanCaptionText(textBlock.text);
@@ -1421,6 +1474,7 @@ ${trendBrief}
         }
         const data = await response.json();
         if (data.zap_new_balance !== undefined) accountBalance.textContent = '$' + Number(data.zap_new_balance).toFixed(2);
+        refreshActivityIfOpen();
         const combined = (data.content || [])
           .filter(c => c.type === 'text')
           .map(c => c.text)
