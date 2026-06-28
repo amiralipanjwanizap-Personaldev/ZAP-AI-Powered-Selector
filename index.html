@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZAP Trend Curator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F7F3EC;
+    font-family: 'Inter', sans-serif;
+    color: #2A2622;
+  }
+  .card {
+    text-align: center;
+    max-width: 420px;
+    padding: 40px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 28px;
+    margin: 0 0 8px;
+  }
+  p { color: #6B6259; font-size: 14px; margin: 0 0 24px; }
+  button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 22px;
+    background: #B6592F;
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: #8C4424; }
+  #result {
+    margin-top: 18px;
+    font-size: 13px;
+    color: #4B7A53;
+    min-height: 20px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>ZAP Trend Curator</h1>
+    <p>This page is live proof your GitHub repo is connected to Vercel and deploying correctly.</p>
+    <button id="checkBtn">Check backend connection</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById('checkBtn').addEventListener('click', async () => {
+      const result = document.getElementById('result');
+      result.textContent = 'Checking...';
+      try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        result.textContent = data.ok ? 'Connected — backend responded at ' + data.timestamp : 'Something went wrong.';
+      } catch (err) {
+        result.style.color = '#B23A2E';
+        result.textContent = 'Could not reach the backend: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
