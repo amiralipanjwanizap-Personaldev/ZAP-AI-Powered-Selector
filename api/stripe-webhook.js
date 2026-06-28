@@ -1,12 +1,6 @@
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
 
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
 // Stripe signs the EXACT raw bytes of the request body. Vercel's default
 // body parser would have already converted it to a JS object by the time
 // we see it, which breaks signature verification — so it's disabled here
@@ -26,6 +20,18 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).end();
   }
+
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET environment variable.');
+    return res.status(500).json({ error: 'Server misconfigured.' });
+  }
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('Missing Supabase environment variables.');
+    return res.status(500).json({ error: 'Server misconfigured.' });
+  }
+
+  const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+  const supabaseAdmin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   const signature = req.headers['stripe-signature'];
   let event;
