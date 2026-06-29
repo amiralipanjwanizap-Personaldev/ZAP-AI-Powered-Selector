@@ -5,19 +5,32 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #F7F3EC;
-    --surface: #FFFFFF;
-    --text: #2A2622;
-    --text-muted: #6B6259;
-    --accent: #B6592F;
-    --accent-dark: #8C4424;
-    --border: #E5DDD0;
-    --good: #4B7A53;
-    --warn: #B68A2E;
-    --bad: #B23A2E;
+    --bg: #16130F;
+    --surface: #211C16;
+    --surface-2: #19150F;
+    --text: #F2EAE0;
+    --text-muted: #9C9082;
+    --accent: #DD7F49;
+    --accent-dark: #B6592F;
+    --border: #3A3329;
+    --good: #82BD8A;
+    --good-soft: #1F2B20;
+    --warn: #DCB565;
+    --warn-soft: #332C16;
+    --bad: #E2776A;
+    --bad-soft: #3A201C;
+    --disabled-bg: #332E24;
+    --disabled-text: #6F6452;
+    --hover-wash: #2B251D;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); min-height: 100vh; }
+  body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; font-family: 'Inter', sans-serif; }
+  input, select, textarea {
+    background: var(--surface-2);
+    color: var(--text);
+    accent-color: var(--accent);
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 0.8; }
   #app {
     font-family: 'Inter', sans-serif;
     color: var(--text);
@@ -48,7 +61,7 @@
     border-radius: 14px;
     padding: 24px;
     margin-bottom: 22px;
-    box-shadow: 0 1px 2px rgba(42,38,34,0.03), 0 6px 16px rgba(42,38,34,0.04);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.35);
   }
   .card h2 {
     font-family: 'Fraunces', serif;
@@ -84,7 +97,7 @@
     border-radius: 8px;
     padding: 12px 14px;
     resize: vertical;
-    background: #FCFAF6;
+    background: var(--surface-2);
   }
   input[type="file"] {
     font-family: 'Inter', sans-serif;
@@ -103,13 +116,14 @@
     transition: background 0.15s ease;
   }
   button:hover:not(:disabled) { background: var(--accent-dark); }
-  button:disabled { background: #D8CFC0; color: #8a8275; cursor: not-allowed; }
+  button:disabled { background: var(--disabled-bg); color: var(--disabled-text); cursor: not-allowed; }
+  button #runBtnCost { font-weight: 700; opacity: 0.92; }
   button.secondary {
     background: transparent;
     color: var(--accent-dark);
     border: 1px solid var(--border);
   }
-  button.secondary:hover:not(:disabled) { background: #F1EAE0; }
+  button.secondary:hover:not(:disabled) { background: var(--hover-wash); }
   .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .grid {
     display: grid;
@@ -122,7 +136,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     overflow: hidden;
-    background: #fff;
+    background: var(--surface);
   }
   .thumb img { width: 100%; height: 110px; object-fit: cover; display: block; }
   .thumb .meta {
@@ -138,14 +152,14 @@
     border-radius: 5px;
     margin-bottom: 4px;
   }
-  .qbadge.good { background: #E8F0E5; color: var(--good); }
-  .qbadge.warn { background: #F7EFD9; color: var(--warn); }
-  .qbadge.bad { background: #F6E3E0; color: var(--bad); }
+  .qbadge.good { background: var(--good-soft); color: var(--good); }
+  .qbadge.warn { background: var(--warn-soft); color: var(--warn); }
+  .qbadge.bad { background: var(--bad-soft); color: var(--bad); }
   .thumb label {
     position: absolute;
     top: 7px;
     right: 7px;
-    background: rgba(255,255,255,0.92);
+    background: rgba(33,28,22,0.92);
     border-radius: 5px;
     padding: 3px 5px;
     font-size: 11px;
@@ -158,7 +172,7 @@
     width: 100%;
     height: 6px;
     border-radius: 4px;
-    background: #ECE4D6;
+    background: var(--border);
     overflow: hidden;
     margin: 8px 0 4px;
   }
@@ -177,7 +191,7 @@
   }
   .scorebar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12.5px; }
   .scorebar-row .label { width: 90px; color: var(--text-muted); flex-shrink: 0; }
-  .scorebar-track { flex: 1; height: 6px; border-radius: 4px; background: #ECE4D6; overflow: hidden; }
+  .scorebar-track { flex: 1; height: 6px; border-radius: 4px; background: var(--border); overflow: hidden; }
   .scorebar-fill { height: 100%; background: var(--accent); }
   .scorebar-row .val { width: 28px; text-align: right; font-weight: 600; flex-shrink: 0; }
   .notes { font-style: italic; color: var(--text-muted); font-size: 13px; margin-top: 10px; }
@@ -229,7 +243,7 @@
     position: absolute;
     bottom: 7px;
     right: 7px;
-    background: rgba(75,122,83,0.92);
+    background: rgba(130,189,138,0.92);
     color: #fff;
     font-size: 10px;
     font-weight: 600;
@@ -264,7 +278,7 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 12px 14px;
-    background: #FCFAF6;
+    background: var(--surface-2);
     color: var(--text);
   }
   .caption-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
@@ -308,7 +322,7 @@
     display: none;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(42,38,34,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     padding: 14px 24px;
     position: sticky;
     top: 0;
@@ -349,7 +363,7 @@
   #buyCreditsGroup { display: flex; align-items: center; gap: 6px; }
   .buy-btn { background: var(--accent) !important; color: #fff !important; border: none !important; font-weight: 600; }
   .buy-btn:hover { background: var(--accent-dark) !important; }
-  .buy-btn:disabled { background: #D8CFC0 !important; color: #8a8275 !important; cursor: not-allowed; }
+  .buy-btn:disabled { background: var(--disabled-bg) !important; color: var(--disabled-text) !important; cursor: not-allowed; }
   #activityPanel {
     display: none;
     max-width: 920px;
@@ -373,7 +387,9 @@
     border-right: 1px solid var(--border);
   }
   #sidebar .nav-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
     text-align: left;
     background: transparent;
@@ -387,11 +403,25 @@
     color: var(--text-muted);
     cursor: pointer;
   }
-  #sidebar .nav-item:hover { background: var(--bg); color: var(--text); }
+  #sidebar .nav-item svg { flex-shrink: 0; opacity: 0.85; }
+  #sidebar .nav-item:hover { background: var(--hover-wash); color: var(--text); }
   #sidebar .nav-item.active { background: var(--accent); color: #fff; }
+  #sidebar .nav-item.active svg { opacity: 1; }
   #shellMain { flex: 1; min-width: 0; padding: 32px 20px 60px; }
 
   .dashboard-header { margin-bottom: 24px; }
+  .stats-strip { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat-card {
+    flex: 1;
+    min-width: 150px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 16px rgba(0,0,0,0.35);
+  }
+  .stat-card .stat-value { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; color: var(--text); line-height: 1.1; }
+  .stat-card .stat-label { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
   .dashboard-controls { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
   .dashboard-controls input[type="text"] {
     flex: 1;
@@ -422,7 +452,7 @@
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 1px 2px rgba(42,38,34,0.03), 0 6px 16px rgba(42,38,34,0.04);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.35);
     transition: transform 0.15s ease;
   }
   .gallery-card:hover { transform: translateY(-2px); }
@@ -470,8 +500,14 @@
 
 <div id="shellBody">
   <div id="sidebar">
-    <button class="nav-item" data-view="dashboard">Dashboard</button>
-    <button class="nav-item" data-view="curate">Curate</button>
+    <button class="nav-item" data-view="dashboard">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" data-view="curate">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M3 12h4M19.07 4.93l-2.83 2.83M4.93 19.07l2.83-2.83"/><path d="M12 12l7 2-3 3-2-3z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+      Curate
+    </button>
   </div>
 
   <div id="shellMain">
@@ -482,6 +518,12 @@
         <div class="dashboard-header">
           <h1>Your galleries</h1>
           <p class="sub">Saved curations, ready to reopen anytime without re-running the AI.</p>
+        </div>
+
+        <div class="stats-strip">
+          <div class="stat-card"><div class="stat-value" id="statGalleries">...</div><div class="stat-label">Galleries saved</div></div>
+          <div class="stat-card"><div class="stat-value" id="statBalance">...</div><div class="stat-label">Current balance</div></div>
+          <div class="stat-card"><div class="stat-value" id="statPhotosScored">...</div><div class="stat-label">Photos scored all-time</div></div>
         </div>
 
         <div id="galleryListSection">
@@ -517,7 +559,7 @@
             <p class="hint" style="margin-top:14px;">Carousel caption</p>
             <textarea id="detailCaptionCarousel" readonly></textarea>
           </div>
-          <button id="deleteGalleryBtn" style="background:#F6E3E0; color:#B23A2E;">Delete this gallery</button>
+          <button id="deleteGalleryBtn" style="background:var(--bad-soft); color:var(--bad);">Delete this gallery</button>
         </div>
       </div>
     </div>
@@ -531,6 +573,20 @@
     <div class="card">
       <h2>Trend priorities</h2>
       <p class="hint">What the AI weighs when judging "trend fit." Refresh this from real current trends instead of editing it by hand, or tweak it yourself below.</p>
+      <div class="row" style="margin-bottom:12px;">
+        <span class="progress-text">Genre:</span>
+        <select id="genreSelect" style="padding:9px 12px; border:1px solid var(--border); border-radius:7px; font-family:'Inter',sans-serif; font-size:13.5px; color:var(--text); background:var(--surface);">
+          <option value="weddings">Weddings</option>
+          <option value="portraits">Portraits</option>
+          <option value="fashion">Fashion</option>
+          <option value="corporate">Corporate / Headshots</option>
+          <option value="documentary">Documentary</option>
+          <option value="events">Events</option>
+          <option value="wildlife">Wildlife &amp; Nature</option>
+          <option value="general">General Photography</option>
+        </select>
+        <span class="progress-text" id="genreChangeStatus" style="color:var(--good);"></span>
+      </div>
       <textarea id="trendBrief">Candid, unposed moments over stiff formal poses
 Documentary storytelling, real interactions over staged setups
 Behind-the-scenes / in-between moments (quiet nerves, laughter, getting ready)
@@ -540,7 +596,7 @@ Film-like grain and warm, true-to-skin tones over heavy filters
 Intimate micro-moments: a hand squeeze, a glance, a held breath
 Occasional bold high-contrast / direct-flash shot for variety</textarea>
       <div class="export-row" style="margin-top:14px;">
-        <input type="text" id="trendFocusInput" placeholder="Optional focus (e.g. destination weddings, a specific region or style)" style="flex:1; min-width:220px; padding:9px 12px; border:1px solid var(--border); border-radius:7px; font-family:'Inter',sans-serif; font-size:13px;">
+        <input type="text" id="trendFocusInput" placeholder="Optional focus (e.g. destination weddings, a specific region or style)" style="flex:1; min-width:220px; padding:9px 12px; border:1px solid var(--border); border-radius:7px; font-family:'Inter',sans-serif; font-size:13px; color:var(--text); background:var(--surface-2);">
         <button class="secondary" id="refreshTrendBtn">Refresh from current trends</button>
         <span class="progress-text" id="trendRefreshCostHint"></span>
       </div>
@@ -567,12 +623,12 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
       <h2><span class="step-badge">2</span> Run AI scoring</h2>
       <p class="hint">Scores technical quality, aesthetic strength, trend fit, and scroll-stopping potential for every checked photo, and tags its moment type.</p>
       <div class="row">
-        <button id="runBtn">Run AI analysis on checked photos</button>
+        <button id="runBtn">Run AI analysis on checked photos<span id="runBtnCost"></span></button>
         <button class="secondary" id="resetBtn">Start over</button>
       </div>
       <div class="row" style="margin-top:12px;">
         <span class="progress-text">Parallel requests:</span>
-        <input type="number" id="concurrencyInput" min="1" max="8" value="2" style="width:48px; padding:6px 8px; border:1px solid var(--border); border-radius:6px;">
+        <input type="number" id="concurrencyInput" min="1" max="8" value="2" style="width:48px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; color:var(--text); background:var(--surface-2);">
         <span class="progress-text" style="color:var(--text-muted);">(2 is a safer default since this account hit rate limits at 4; raise it cautiously if you don't see failures)</span>
       </div>
       <div id="estimateText" class="estimate-text"></div>
@@ -635,7 +691,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
       <h2>Save this gallery</h2>
       <p class="hint">Saves the best shot, the current carousel, and both captions to your dashboard so you can reopen them anytime without re-running the AI.</p>
       <div class="row">
-        <input type="text" id="galleryNameInput" placeholder="Gallery name (e.g. Sarah and James, June 2026)" style="flex:1; min-width:240px; padding:10px 12px; border:1px solid var(--border); border-radius:7px; font-family:'Inter',sans-serif; font-size:14px;">
+        <input type="text" id="galleryNameInput" placeholder="Gallery name (e.g. Sarah and James, June 2026)" style="flex:1; min-width:240px; padding:10px 12px; border:1px solid var(--border); border-radius:7px; font-family:'Inter',sans-serif; font-size:14px; color:var(--text); background:var(--surface-2);">
         <button id="saveGalleryBtn">Save gallery</button>
       </div>
       <div id="saveGalleryStatus" class="progress-text" style="margin-top:10px;"></div>
@@ -655,8 +711,8 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   // Paste your own values here — these two are SAFE to expose client-side
   // by design (unlike the Anthropic key or the Supabase service_role key,
   // which must only ever live in Vercel's server-side environment variables).
-  const SUPABASE_URL = 'https://guxawmliwemssbgfblrl.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_Ox3XOFrNhsvMDW3kGtOnTg_qZykFeks';
+  const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+  const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE';
 
   let sb;
   try {
@@ -666,7 +722,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (err) {
     document.getElementById('authView').innerHTML =
-      '<p style="color:#B23A2E; text-align:center; font-size:13px;">Setup error: ' + err.message + '</p>';
+      '<p style="color:var(--bad); text-align:center; font-size:13px;">Setup error: ' + err.message + '</p>';
     throw err;
   }
 
@@ -692,7 +748,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     panel.innerHTML = '<p style="color:var(--text-muted);">Loading...</p>';
     const { data, error } = await sb.from('job_history').select('*').order('created_at', { ascending: false }).limit(20);
     if (error) {
-      panel.innerHTML = '<p style="color:#B23A2E;">Could not load activity: ' + error.message + '</p>';
+      panel.innerHTML = '<p style="color:var(--bad);">Could not load activity: ' + error.message + '</p>';
       return;
     }
     if (!data.length) {
@@ -834,10 +890,137 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
 
   const MAX_FILES = 800;
   const HASH_DIST_THRESHOLD = 6;
-  const MOMENT_ARC_ORDER = {
-    getting_ready: 0, candid: 1, ceremony: 2, portrait: 3, reception: 4, detail: 5, other: 6
+
+  // Each genre bundles everything that needs to change together when the
+  // subject matter changes: what the AI is told it's scoring, which moment
+  // categories make sense for that genre, what order those categories form
+  // a narrative arc in, and a real-trend-grounded starting brief.
+  const GENRES = {
+    weddings: {
+      label: 'Weddings',
+      subject: 'wedding photo',
+      captionSubject: 'wedding',
+      momentTypes: ['getting_ready', 'candid', 'ceremony', 'portrait', 'reception', 'detail', 'other'],
+      arcOrder: { getting_ready: 0, candid: 1, ceremony: 2, portrait: 3, reception: 4, detail: 5, other: 6 },
+      defaultTrendBrief: `Candid, unposed moments over stiff formal poses
+Documentary storytelling, real interactions over staged setups
+Behind-the-scenes / in-between moments (quiet nerves, laughter, getting ready)
+Raw, "messy" detail shots over overly styled flat-lays
+Vertical, mobile-first framing
+Film-like grain and warm, true-to-skin tones over heavy filters
+Intimate micro-moments: a hand squeeze, a glance, a held breath
+Occasional bold high-contrast / direct-flash shot for variety`
+    },
+    portraits: {
+      label: 'Portraits',
+      subject: 'portrait photo',
+      captionSubject: 'portrait',
+      momentTypes: ['environmental', 'studio', 'candid_expression', 'creative_concept', 'detail', 'other'],
+      arcOrder: { environmental: 0, studio: 1, candid_expression: 2, creative_concept: 3, detail: 4, other: 5 },
+      defaultTrendBrief: `Real, unposed expressions over stiff "say cheese" smiles
+Cinematic letterbox framing with film-inspired color grading
+Visible skin texture and natural asymmetry over heavy retouching
+Neon or RGB lighting for bold, futuristic looks, used selectively
+Blue hour and golden hour soft natural light for mood
+Character-rich, age-positive faces over uniform "perfect" looks
+Vertical, mobile-first framing for social delivery
+Film grain and analog-inspired texture`
+    },
+    fashion: {
+      label: 'Fashion',
+      subject: 'fashion photo',
+      captionSubject: 'fashion',
+      momentTypes: ['backstage', 'editorial', 'movement', 'beauty', 'detail', 'other'],
+      arcOrder: { backstage: 0, editorial: 1, movement: 2, beauty: 3, detail: 4, other: 5 },
+      defaultTrendBrief: `Authentic in-the-moment shots (laughing, fidgeting, looking away) over rigid posing
+Cinematic, movie-still style lighting and composition
+Bold saturated palettes with one dominant color anchoring the frame
+Film textures and 90s-flash-inspired retro looks
+Diverse, inclusive casting across body type, age, and culture
+Backstage and behind-the-scenes energy paired with the polished final shot
+Motion and movement: fabric, hair, fast shutter drag
+High-contrast, attention-grabbing lighting for standout shots`
+    },
+    corporate: {
+      label: 'Corporate / Headshots',
+      subject: 'professional headshot photo',
+      captionSubject: 'corporate headshot',
+      momentTypes: ['environmental_work', 'headshot', 'team_candid', 'detail', 'other'],
+      arcOrder: { environmental_work: 0, headshot: 1, team_candid: 2, detail: 3, other: 4 },
+      defaultTrendBrief: `Genuine, relaxed expression over stiff "corporate face"
+Dark charcoal or near-black backgrounds over plain white
+Light, natural retouching that still looks like the person
+Environmental and architectural backgrounds over a sterile studio sweep
+Smart-casual wardrobe over rigid suit-and-tie
+Waist-up or three-quarter framing for flexible use across platforms
+Consistent lighting and tone across a full team set
+Visible skin texture over AI-smoothed, plastic-looking perfection`
+    },
+    documentary: {
+      label: 'Documentary',
+      subject: 'documentary photo',
+      captionSubject: 'documentary',
+      momentTypes: ['establishing', 'candid_moment', 'portrait', 'action', 'detail', 'other'],
+      arcOrder: { establishing: 0, candid_moment: 1, action: 2, portrait: 3, detail: 4, other: 5 },
+      defaultTrendBrief: `Candid, unscripted real moments over staged setups
+Character-rich, unconventional faces over uniform polish
+Motion blur and intentional movement for energy and emotion
+Mobile-first, handheld framing for an unscripted, personal feel
+Analog and film-inspired texture for timeless, soulful imagery
+Cinematic lighting and color grading for narrative depth
+A sense of sequence and story, not isolated single shots
+Authentic environments over controlled studio settings`
+    },
+    events: {
+      label: 'Events',
+      subject: 'event photo',
+      captionSubject: 'event',
+      momentTypes: ['arrival', 'candid', 'group', 'performance', 'detail', 'other'],
+      arcOrder: { arrival: 0, candid: 1, group: 2, performance: 3, detail: 4, other: 5 },
+      defaultTrendBrief: `Candid guest reactions over posed group lineups
+Drone or wide aerial shots for venue and crowd scale
+Mobile-first vertical clips and carousel-ready sequences
+Cinematic lighting for stage and speaker moments
+Behind-the-scenes setup shots paired with polished final coverage
+Motion blur for dancing, crowds, and high-energy moments
+Authentic, unfiltered crowd reactions over staged smiles
+Detail shots of decor and small touches that tell the event's story`
+    },
+    wildlife: {
+      label: 'Wildlife & Nature',
+      subject: 'wildlife or nature photo',
+      captionSubject: 'wildlife',
+      momentTypes: ['habitat_landscape', 'behavior', 'action', 'portrait_closeup', 'detail', 'other'],
+      arcOrder: { habitat_landscape: 0, behavior: 1, action: 2, portrait_closeup: 3, detail: 4, other: 5 },
+      defaultTrendBrief: `Imperfect, analog-inspired texture over over-processed perfection
+Authentic behavior and habitat over staged or baited shots
+High-impact natural light: golden hour, storm light, backlighting
+Drone and aerial perspectives for scale and landscape context
+Sharp action and motion-freeze for behavior shots
+Intimate close-up detail (eyes, texture) for emotional connection
+Environmental storytelling: the animal within its habitat, not isolated
+Minimal post-processing for a raw, true-to-life feel`
+    },
+    general: {
+      label: 'General Photography',
+      subject: 'photo',
+      captionSubject: 'shoot',
+      momentTypes: ['environmental', 'subject_focus', 'candid', 'creative', 'detail', 'other'],
+      arcOrder: { environmental: 0, subject_focus: 1, candid: 2, creative: 3, detail: 4, other: 5 },
+      defaultTrendBrief: `Candid and unfiltered moments over heavily posed or staged shots
+Cinematic color grading and lighting for a story-driven feel
+Mobile-first, vertical framing for social-first delivery
+Film grain and analog texture for warmth and timelessness
+Bold, intentional color choices over flat, neutral tones
+Character and authenticity over AI-smoothed perfection
+Motion and movement used deliberately for energy
+Strong single details that anchor a larger story`
+    }
   };
-  const VALID_MOMENTS = Object.keys(MOMENT_ARC_ORDER);
+
+  let currentGenre = 'weddings';
+  function genreConfig() { return GENRES[currentGenre]; }
+
   const CLIENT_PROCESS_CONCURRENCY = 6;
   const ASSUMED_SECONDS_PER_CALL = 3; // rough estimate only, used for the time estimate display
 
@@ -955,6 +1138,19 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   carouselCaptionBtn.addEventListener('click', () => generateCarouselCaption());
   carouselCopyBtn.addEventListener('click', () => copyCaption(carouselCaptionText, carouselCopyStatus));
   document.getElementById('refreshTrendBtn').addEventListener('click', refreshTrendBrief);
+
+  document.getElementById('genreSelect').addEventListener('change', (e) => {
+    currentGenre = e.target.value;
+    const genre = genreConfig();
+    document.getElementById('trendBrief').value = genre.defaultTrendBrief;
+    recomputeEstimate();
+
+    const status = document.getElementById('genreChangeStatus');
+    const alreadyScored = photos.some((p) => p.ai);
+    status.textContent = alreadyScored
+      ? `Switched to ${genre.label}. Photos already scored keep their old categorization. Re-run AI analysis for accurate ${genre.label.toLowerCase()} tagging.`
+      : `Trend priorities updated for ${genre.label}.`;
+  });
   document.getElementById('trendBrief').addEventListener('input', recomputeEstimate);
 
 
@@ -1189,6 +1385,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     const mins = Math.ceil(seconds / 60);
     if (included.length === 0) {
       estimateText.textContent = '';
+      document.getElementById('runBtnCost').textContent = '';
       return;
     }
     const alreadyDone = included.length - needsScoring.length;
@@ -1203,6 +1400,9 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     estimateText.textContent = `${included.length} photo(s) checked` +
       (alreadyDone > 0 ? ` (${alreadyDone} already scored, ${needsScoring.length} new)` : '') +
       `. Rough estimate at ${concurrency} parallel requests: ~${mins} minute(s). Estimated cost: ~${formatCost(cost)}.`;
+
+    const runBtnCost = document.getElementById('runBtnCost');
+    runBtnCost.textContent = needsScoring.length > 0 ? ` (~${formatCost(cost)})` : '';
   }
 
   function saveProgress() {
@@ -1243,7 +1443,8 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   }
 
   function buildPrompt(trendBrief) {
-    return `Score this wedding photo for a photographer's social media curation tool.
+    const genre = genreConfig();
+    return `Score this ${genre.subject} for a photographer's social media curation tool.
 
 Current trend priorities this studio is leaning into:
 ${trendBrief}
@@ -1254,7 +1455,7 @@ Score the photo 0-10 on each of these:
 - trend_fit: how well it matches the trend priorities above
 - hook_potential: how likely this exact image is to stop someone mid-scroll as the first image in a post
 
-Also classify moment_type as exactly one of: getting_ready, candid, ceremony, portrait, reception, detail, other.
+Also classify moment_type as exactly one of: ${genre.momentTypes.join(', ')}.
 Add a one-sentence note (max 15 words) explaining the scores.
 
 Your reply must be raw JSON only. No markdown, no code fences, no text before or after, in exactly this shape:
@@ -1308,7 +1509,7 @@ Your reply must be raw JSON only. No markdown, no code fences, no text before or
     const textBlock = (data.content || []).find(c => c.type === 'text');
     if (!textBlock) throw new Error('No text response from model');
     const parsed = extractJson(textBlock.text);
-    if (!VALID_MOMENTS.includes(parsed.moment_type)) parsed.moment_type = 'other';
+    if (!genreConfig().momentTypes.includes(parsed.moment_type)) parsed.moment_type = 'other';
     return parsed;
   }
 
@@ -1367,9 +1568,10 @@ Your reply must be raw JSON only. No markdown, no code fences, no text before or
 
   function orderCarousel(selected) {
     const hook = selected[0];
+    const arcOrder = genreConfig().arcOrder;
     const rest = selected.slice(1).sort((a, b) => {
-      const ai = MOMENT_ARC_ORDER[a.momentType] ?? 6;
-      const bi = MOMENT_ARC_ORDER[b.momentType] ?? 6;
+      const ai = arcOrder[a.momentType] ?? 99;
+      const bi = arcOrder[b.momentType] ?? 99;
       if (ai !== bi) return ai - bi;
       return b._score - a._score;
     });
@@ -1601,7 +1803,7 @@ Your reply must be raw JSON only. No markdown, no code fences, no text before or
       return;
     }
     if (!currentBest) {
-      status.textContent = 'Nothing to save yet — run AI scoring first.';
+      status.textContent = 'Nothing to save yet. Run AI scoring first.';
       return;
     }
 
@@ -1614,7 +1816,9 @@ Your reply must be raw JSON only. No markdown, no code fences, no text before or
       const userId = userData.user.id;
 
       const { data: galleryRow, error: galleryErr } = await sb.from('galleries').insert({
+        user_id: userId,
         name,
+        genre: currentGenre,
         caption_single: bestCaptionText.value.trim() || null,
         caption_carousel: carouselCaptionText.value.trim() || null
       }).select().single();
@@ -1683,6 +1887,12 @@ Your reply must be raw JSON only. No markdown, no code fences, no text before or
     allGalleries = data;
     status.textContent = `${data.length} of 3 free gallery slots used.`;
     renderGalleryGrid();
+
+    document.getElementById('statGalleries').textContent = `${data.length} / 3`;
+    document.getElementById('statBalance').textContent = accountBalance.textContent || '...';
+    sb.from('job_history').select('*', { count: 'exact', head: true }).eq('job_type', 'scoring').then(({ count }) => {
+      document.getElementById('statPhotosScored').textContent = count != null ? String(count) : '0';
+    });
   }
 
   async function loadThumbnail(galleryId, thumbWrapEl) {
@@ -1740,7 +1950,8 @@ Your reply must be raw JSON only. No markdown, no code fences, no text before or
       return;
     }
     document.getElementById('detailGalleryName').textContent = gallery.name;
-    document.getElementById('detailGalleryDate').textContent = new Date(gallery.created_at).toLocaleString();
+    const genreLabel = (GENRES[gallery.genre] && GENRES[gallery.genre].label) || gallery.genre;
+    document.getElementById('detailGalleryDate').textContent = new Date(gallery.created_at).toLocaleString() + ' \u00b7 ' + genreLabel;
     document.getElementById('detailCaptionSingle').value = gallery.caption_single || '(no caption saved)';
     document.getElementById('detailCaptionCarousel').value = gallery.caption_carousel || '(no caption saved)';
 
@@ -1850,7 +2061,8 @@ Your reply must be raw JSON only. No markdown, no code fences, no text before or
     bestCaptionWrap.style.display = 'block';
     bestCaptionText.value = 'Writing a caption...';
     const trendBrief = document.getElementById('trendBrief').value;
-    const prompt = `Write a short Instagram caption for this single wedding photo, posted by a professional wedding photography studio, in first person plural studio voice.
+    const genre = genreConfig();
+    const prompt = `Write a short Instagram caption for this single ${genre.subject}, posted by a professional studio specializing in ${genre.captionSubject} work, in first person plural studio voice.
 
 Moment type: ${currentBest.momentType}
 What the photo shows: ${currentBest.notes || ''}
@@ -1880,7 +2092,8 @@ ${trendBrief}
     carouselCaptionWrap.style.display = 'block';
     carouselCaptionText.value = 'Writing a caption...';
     const trendBrief = document.getElementById('trendBrief').value;
-    const introPrompt = `Write a short Instagram caption for a ${currentCarouselOrdered.length}-photo carousel post from a wedding, posted by a professional wedding photography studio, in first person plural studio voice. The photos are shown below in the order they'll appear in the carousel. Write one caption that captures the overall arc, not a description of each slide individually.
+    const genre = genreConfig();
+    const introPrompt = `Write a short Instagram caption for a ${currentCarouselOrdered.length}-photo carousel post from a ${genre.captionSubject}, posted by a professional studio specializing in ${genre.captionSubject} work, in first person plural studio voice. The photos are shown below in the order they'll appear in the carousel. Write one caption that captures the overall arc, not a description of each slide individually.
 
 Trend priorities this studio cares about:
 ${trendBrief}
@@ -1949,9 +2162,10 @@ ${trendBrief}
     status.textContent = 'Searching for current trends...';
 
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const prompt = `Search for what is currently trending in wedding photography and wedding content on Instagram and TikTok, as of today (${today}).` +
+    const genre = genreConfig();
+    const prompt = `Search for what is currently trending in ${genre.captionSubject} photography and ${genre.captionSubject} content on Instagram and TikTok, as of today (${today}).` +
       (focus ? ` Pay particular attention to relevance for: ${focus}.` : '') +
-      `\n\nCondense your findings into a short list of current content and style trends a wedding photography studio should weigh when picking and posting photos. Be concrete and actionable (e.g. "candid over posed", "vertical framing", "raw behind-the-scenes paired with the polished shot"), not vague themes.\n\nPut the final list, and only the list, between these exact markers, one trend per line inside them, short phrases under 12 words each, 6-10 lines, no bullet symbols, no numbering:\n<<<TRENDS>>>\n(your lines here)\n<<<END>>>\n\nYou can research and reason before the markers, but nothing should appear after <<<END>>>.`;
+      `\n\nCondense your findings into a short list of current content and style trends a ${genre.captionSubject} photography studio should weigh when picking and posting photos. Be concrete and actionable (e.g. "candid over posed", "vertical framing", "raw behind-the-scenes paired with the polished shot"), not vague themes.\n\nPut the final list, and only the list, between these exact markers, one trend per line inside them, short phrases under 12 words each, 6-10 lines, no bullet symbols, no numbering:\n<<<TRENDS>>>\n(your lines here)\n<<<END>>>\n\nYou can research and reason before the markers, but nothing should appear after <<<END>>>.`;
 
     let lastErr;
     for (let attempt = 1; attempt <= 2; attempt++) {
