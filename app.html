@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -379,6 +380,33 @@
   #activityPanel th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--border); }
   #activityPanel td { padding: 5px 8px; border-bottom: 1px solid var(--border); color: var(--text); }
   #activityPanel .cost-cell { text-align: right; font-weight: 600; }
+  #adminLink button { border-color: var(--accent); color: var(--accent-dark); }
+  #announcementBanner {
+    background: var(--warn-soft);
+    color: var(--warn);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    position: sticky;
+    top: 60px;
+    z-index: 19;
+  }
+  #announcementBannerText { max-width: 800px; text-align: center; }
+  #announcementBannerDismiss {
+    background: transparent;
+    border: none;
+    color: var(--warn);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  #announcementBannerDismiss:hover { opacity: 0.7; }
   #shellBody { display: none; align-items: flex-start; }
   #sidebar {
     width: 200px;
@@ -568,9 +596,14 @@
         <button class="buy-btn" data-pack="large">$50</button>
       </span>
       <button id="activityToggleBtn">Recent activity</button>
+      <a id="adminLink" href="/admin.html" style="display:none; text-decoration:none;"><button type="button">Admin panel</button></a>
       <button id="accountLogoutBtn">Log out</button>
     </div>
   </div>
+</div>
+<div id="announcementBanner" style="display:none;">
+  <span id="announcementBannerText"></span>
+  <button id="announcementBannerDismiss" aria-label="Dismiss">&times;</button>
 </div>
 <div id="purchaseStatus" style="display:none; max-width:920px; margin:0 auto 8px; text-align:right; font-size:12.5px;"></div>
 
@@ -891,6 +924,37 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     accountBalance.textContent = error ? 'unavailable' : '$' + Number(data.balance_usd).toFixed(2);
   }
 
+  // Admin status is only ever ENFORCED server-side (each admin API route
+  // re-checks is_admin itself) -- this is purely a UI convenience so admins
+  // see a link to the panel, not a security boundary.
+  async function refreshAdminLinkVisibility() {
+    const adminLink = document.getElementById('adminLink');
+    try {
+      const { data, error } = await sb.from('user_preferences').select('is_admin').single();
+      adminLink.style.display = (!error && data && data.is_admin === true) ? 'inline-block' : 'none';
+    } catch (e) {
+      adminLink.style.display = 'none';
+    }
+  }
+
+  let announcementDismissed = false;
+  async function refreshAnnouncementBanner() {
+    if (announcementDismissed) return;
+    const banner = document.getElementById('announcementBanner');
+    try {
+      const { data, error } = await sb.from('announcements').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1);
+      if (error || !data || !data.length) { banner.style.display = 'none'; return; }
+      document.getElementById('announcementBannerText').textContent = data[0].message;
+      banner.style.display = 'flex';
+    } catch (e) {
+      banner.style.display = 'none';
+    }
+  }
+  document.getElementById('announcementBannerDismiss').addEventListener('click', () => {
+    announcementDismissed = true;
+    document.getElementById('announcementBanner').style.display = 'none';
+  });
+
   async function renderActivity() {
     const panel = document.getElementById('activityPanel');
     panel.innerHTML = '<p style="color:var(--text-muted);">Loading...</p>';
@@ -984,6 +1048,9 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     document.getElementById('shellBody').style.display = 'flex';
     accountEmail.textContent = email;
     await refreshBalanceDisplay();
+    refreshServiceMultiplier();
+    refreshAdminLinkVisibility();
+    refreshAnnouncementBanner();
     handlePurchaseReturn();
     showView('dashboard');
     maybeStartTour();
@@ -1327,7 +1394,25 @@ Strong single details that anchor a larger story`
   // Service multiplier covers this platform's usage, infrastructure, and
   // maintenance costs on top of the underlying API rate. Applied to every
   // displayed estimate before formatting, rather than shown as a line item.
-  const SERVICE_MULTIPLIER = 1.10;
+  // This starts as a fallback and is overwritten by the live value from
+  // app_settings right after login (see refreshServiceMultiplier below) --
+  // that table is readable by any logged-in user specifically so these
+  // estimates can stay accurate if the admin panel changes the rate.
+  let SERVICE_MULTIPLIER = 1.10;
+
+  async function refreshServiceMultiplier() {
+    try {
+      const { data, error } = await sb.from('app_settings').select('value').eq('key', 'service_multiplier').single();
+      if (error || !data) return;
+      const parsed = Number(data.value);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        SERVICE_MULTIPLIER = parsed;
+        recomputeEstimate();
+      }
+    } catch (e) {
+      console.warn('Could not refresh live service multiplier, using fallback:', e);
+    }
+  }
 
   function imageTokens(w, h) {
     if (!w || !h) return 0;

@@ -1,0 +1,565 @@
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #16130F;
+    --surface: #211C16;
+    --surface-2: #19150F;
+    --text: #F2EAE0;
+    --text-muted: #9C9082;
+    --accent: #DD7F49;
+    --accent-dark: #B6592F;
+    --border: #3A3329;
+    --good: #82BD8A;
+    --good-soft: #1F2B20;
+    --warn: #DCB565;
+    --warn-soft: #332C16;
+    --bad: #E2776A;
+    --bad-soft: #3A201C;
+    --disabled-bg: #332E24;
+    --disabled-text: #6F6452;
+    --hover-wash: #2B251D;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; font-family: 'Inter', sans-serif; }
+  input, select, textarea {
+    background: var(--surface-2);
+    color: var(--text);
+    accent-color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 0.8; }
+  textarea { width: 100%; min-height: 80px; resize: vertical; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 70px; }
+  .eyebrow { font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-dark); margin: 0 0 10px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 30px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 18px; margin: 0 0 4px; }
+  .sub { color: var(--text-muted); margin: 0 0 28px; font-size: 14.5px; max-width: 620px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.35);
+  }
+  .card .hint { color: var(--text-muted); font-size: 13px; margin: 0 0 16px; }
+  button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    transition: background 0.15s ease;
+  }
+  button:hover:not(:disabled) { background: var(--accent-dark); }
+  button:disabled { background: var(--disabled-bg); color: var(--disabled-text); cursor: not-allowed; }
+  button.secondary { background: transparent; color: var(--accent-dark); border: 1px solid var(--border); }
+  button.secondary:hover:not(:disabled) { background: var(--hover-wash); }
+  button.danger { background: var(--bad-soft); color: var(--bad); }
+  button.danger:hover:not(:disabled) { background: var(--bad); color: #fff; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .status-text { font-size: 13px; color: var(--text-muted); min-height: 18px; }
+  .status-text.good { color: var(--good); }
+  .status-text.bad { color: var(--bad); }
+
+  .stats-strip { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-card {
+    flex: 1; min-width: 160px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 16px rgba(0,0,0,0.35);
+  }
+  .stat-card .stat-value { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; color: var(--text); line-height: 1.1; }
+  .stat-card .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  td.num { text-align: right; font-weight: 600; white-space: nowrap; }
+  .table-scroll { overflow-x: auto; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 5px; }
+  .badge.admin { background: var(--good-soft); color: var(--good); }
+  .badge.untracked { background: var(--warn-soft); color: var(--warn); }
+
+  .adjust-panel {
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+    display: none;
+  }
+  .adjust-panel.open { display: block; }
+  .adjust-panel input[type="number"] { width: 120px; }
+  .adjust-panel input[type="text"] { flex: 1; min-width: 220px; }
+
+  #authView {
+    max-width: 320px; margin: 80px auto; padding: 36px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  }
+  #authView h1 { font-size: 22px; text-align: center; }
+  #authView input { width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+  #authView button { width: 100%; margin-bottom: 8px; }
+  #authStatus { margin-top: 8px; font-size: 13px; color: var(--text-muted); text-align: center; min-height: 18px; }
+
+  #accessDenied { max-width: 440px; margin: 90px auto; text-align: center; padding: 0 20px; }
+  #accessDenied h1 { font-size: 22px; }
+  #accessDenied p { color: var(--text-muted); font-size: 14.5px; }
+  #accessDenied a { color: var(--accent-dark); }
+
+  #topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 24px; position: sticky; top: 0; z-index: 10;
+  }
+  #topbar .bar-inner { max-width: 1080px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted); }
+  #topbar .bar-brand { font-family: 'Fraunces', serif; font-weight: 600; font-size: 15.5px; color: var(--text); }
+  #topbar .bar-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  #topbar strong { color: var(--text); }
+  #topbar a { color: var(--accent-dark); text-decoration: none; font-weight: 600; }
+  #topbar button { background: transparent; border: 1px solid var(--border); color: var(--accent-dark); padding: 6px 12px; }
+
+  .profit-positive { color: var(--good); }
+  .profit-negative { color: var(--bad); }
+</style>
+
+<div id="authView">
+  <h1>Admin login</h1>
+  <input type="email" id="authEmail" placeholder="Email">
+  <input type="password" id="authPassword" placeholder="Password">
+  <button id="authLoginBtn">Log in</button>
+  <div id="authStatus"></div>
+</div>
+
+<div id="accessDenied">
+  <h1>Not an admin account</h1>
+  <p>You're logged in as <strong id="deniedEmail"></strong>, but this account doesn't have admin access on ZAP Trend Curator.</p>
+  <p><a href="/app.html">&larr; Back to the app</a> &nbsp;|&nbsp; <a href="#" id="deniedLogoutLink">Log out</a></p>
+</div>
+
+<div id="adminShell" style="display:none;">
+  <div id="topbar">
+    <div class="bar-inner">
+      <span class="bar-brand">ZAP Trend Curator — Admin</span>
+      <div class="bar-controls">
+        <span>Logged in as <strong id="adminEmail"></strong></span>
+        <a href="/app.html">&larr; Back to app</a>
+        <button id="adminLogoutBtn">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <p class="eyebrow">Internal tool</p>
+    <h1>Admin Panel</h1>
+    <p class="sub">Balances, sales, and announcements for ZAP Trend Curator. Everything here is also enforced server-side, so this page is convenience, not the security boundary.</p>
+
+    <div id="loadStatus" class="status-text">Loading...</div>
+
+    <div class="stats-strip" id="statsStrip" style="display:none;">
+      <div class="stat-card"><div class="stat-value" id="statUserCount">...</div><div class="stat-label">Total users</div></div>
+      <div class="stat-card"><div class="stat-value" id="statRevenue">...</div><div class="stat-label">Total purchased (all time)</div></div>
+      <div class="stat-card"><div class="stat-value" id="statProfit">...</div><div class="stat-label">AI profit (tracked jobs)</div></div>
+      <div class="stat-card"><div class="stat-value" id="statMultiplier">...</div><div class="stat-label">Current multiplier</div></div>
+    </div>
+
+    <div id="dashboardContent" style="display:none;">
+
+      <div class="card" id="multiplierCard">
+        <h2>Service multiplier</h2>
+        <p class="hint">Applied to the raw Anthropic cost of every AI call to get the amount actually charged. Read live by the app, so cost estimates shown to users update instantly too. Must be between 1.0 and 5.0.</p>
+        <div class="row">
+          <input type="number" id="multiplierInput" min="1" max="5" step="0.01" style="width:100px;">
+          <button id="multiplierSaveBtn">Save multiplier</button>
+        </div>
+        <div class="status-text" id="multiplierStatus"></div>
+      </div>
+
+      <div class="card" id="announcementCard">
+        <h2>Announcement banner</h2>
+        <p class="hint">Shown to every logged-in user at the top of the app. Only one announcement is active at a time.</p>
+        <div id="currentAnnouncementWrap" style="margin-bottom:14px;"></div>
+        <textarea id="announcementInput" placeholder="e.g. Scheduled maintenance Friday 10pm-11pm EAT. The tool may be briefly unavailable." maxlength="500"></textarea>
+        <div class="row" style="margin-top:10px;">
+          <button id="announcementPostBtn">Post announcement</button>
+          <button class="secondary" id="announcementClearBtn">Clear current announcement</button>
+        </div>
+        <div class="status-text" id="announcementStatus"></div>
+      </div>
+
+      <div class="card" id="salesReportCard">
+        <h2>Sales report</h2>
+        <p class="hint">Raw cost is the real Anthropic spend; charged is what users paid; profit is the difference. Jobs from before <code>raw_cost_usd</code> existed can't be backfilled, so they're broken out separately rather than guessed at.</p>
+
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th></th><th class="num">Charged</th><th class="num">Raw cost</th><th class="num">Profit</th><th class="num">Jobs</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Tracked (raw cost known)</td>
+                <td class="num" id="salesTrackedCharged">...</td>
+                <td class="num" id="salesTrackedRaw">...</td>
+                <td class="num" id="salesTrackedProfit">...</td>
+                <td class="num" id="salesTrackedCount">...</td>
+              </tr>
+              <tr>
+                <td>Before cost tracking <span class="badge untracked">untracked</span></td>
+                <td class="num" id="salesUntrackedCharged">...</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td class="num" id="salesUntrackedCount">...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 style="margin-top:24px; font-size:15px;">By job type</h2>
+        <div class="table-scroll">
+          <table id="byJobTypeTable">
+            <thead><tr><th>Job type</th><th class="num">Charged (tracked)</th><th class="num">Raw (tracked)</th><th class="num">Profit (tracked)</th><th class="num">Jobs (tracked)</th><th class="num">Charged (untracked)</th><th class="num">Jobs (untracked)</th></tr></thead>
+            <tbody id="byJobTypeBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" id="usersCard">
+        <h2>Users &amp; balances</h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Email</th><th>Joined</th><th class="num">Balance</th><th class="num">Purchased</th><th class="num">AI spend</th><th class="num">Jobs</th><th></th><th></th></tr></thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+        <div class="adjust-panel" id="adjustPanel">
+          <p class="hint" style="margin-bottom:8px;">Adjusting balance for <strong id="adjustTargetEmail"></strong></p>
+          <div class="row">
+            <input type="number" id="adjustAmountInput" placeholder="Amount" step="0.01">
+            <input type="text" id="adjustDescriptionInput" placeholder="Reason (shown in their activity log)">
+            <button id="adjustSubmitBtn">Apply adjustment</button>
+            <button class="secondary" id="adjustCancelBtn">Cancel</button>
+          </div>
+          <p class="hint" style="margin-top:8px; margin-bottom:0;">Positive adds credit, negative subtracts. Limited to ±$1000 per adjustment as a safety ceiling.</p>
+          <div class="status-text" id="adjustStatus"></div>
+        </div>
+      </div>
+
+      <div class="card" id="purchasesCard">
+        <h2>Purchase history</h2>
+        <p class="hint">Most recent 100 Stripe purchases across all users.</p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>When</th><th>User</th><th class="num">Amount</th><th>Note</th></tr></thead>
+            <tbody id="purchasesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const SUPABASE_URL = 'https://guxawmliwemssbgfblrl.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_Ox3XOFrNhsvMDW3kGtOnTg_qZykFeks';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const authView = document.getElementById('authView');
+  const accessDenied = document.getElementById('accessDenied');
+  const adminShell = document.getElementById('adminShell');
+  const authStatus = document.getElementById('authStatus');
+
+  let latestAdminData = null; // cached response from /api/admin-data, for re-rendering without a re-fetch
+
+  function fmtUsd(n, decimals) {
+    if (n === null || n === undefined) return '—';
+    const num = Number(n);
+    const d = decimals !== undefined ? decimals : (Math.abs(num) < 0.01 && num !== 0 ? 4 : 2);
+    return (num < 0 ? '-$' : '$') + Math.abs(num).toFixed(d);
+  }
+  function fmtDate(s) {
+    if (!s) return '—';
+    return new Date(s).toLocaleString();
+  }
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  async function getAccessToken() {
+    const { data } = await sb.auth.getSession();
+    return data.session ? data.session.access_token : null;
+  }
+
+  async function callAdminApi(path, options) {
+    const token = await getAccessToken();
+    if (!token) throw new Error('Not logged in.');
+    const response = await fetch(path, Object.assign({
+      headers: Object.assign({ 'Authorization': 'Bearer ' + token }, (options && options.body) ? { 'Content-Type': 'application/json' } : {})
+    }, options));
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || ('Request failed: ' + response.status));
+    return data;
+  }
+
+  function showLoggedOut() {
+    authView.style.display = 'block';
+    accessDenied.style.display = 'none';
+    adminShell.style.display = 'none';
+  }
+
+  function showAccessDenied(email) {
+    authView.style.display = 'none';
+    accessDenied.style.display = 'block';
+    adminShell.style.display = 'none';
+    document.getElementById('deniedEmail').textContent = email;
+  }
+
+  async function showAdminShell(email) {
+    authView.style.display = 'none';
+    accessDenied.style.display = 'none';
+    adminShell.style.display = 'block';
+    document.getElementById('adminEmail').textContent = email;
+    await loadAndRenderAll();
+  }
+
+  async function loadAndRenderAll() {
+    const loadStatus = document.getElementById('loadStatus');
+    loadStatus.textContent = 'Loading...';
+    loadStatus.className = 'status-text';
+    try {
+      const data = await callAdminApi('/api/admin-data', { method: 'GET' });
+      latestAdminData = data;
+      renderAll(data);
+      loadStatus.textContent = '';
+      document.getElementById('statsStrip').style.display = 'flex';
+      document.getElementById('dashboardContent').style.display = 'block';
+    } catch (err) {
+      loadStatus.textContent = 'Could not load admin data: ' + err.message;
+      loadStatus.className = 'status-text bad';
+    }
+  }
+
+  function renderAll(data) {
+    // -- top stats --
+    document.getElementById('statUserCount').textContent = data.users.length;
+    const totalPurchased = data.users.reduce((s, u) => s + (u.totalPurchasedUsd || 0), 0);
+    document.getElementById('statRevenue').textContent = fmtUsd(totalPurchased);
+    document.getElementById('statProfit').textContent = fmtUsd(data.sales.tracked.profitUsd);
+    document.getElementById('statMultiplier').textContent = data.multiplier !== null ? (Number(data.multiplier).toFixed(2) + '×') : '—';
+
+    // -- multiplier card --
+    if (data.multiplier !== null) document.getElementById('multiplierInput').value = data.multiplier;
+
+    // -- announcement card --
+    const currentWrap = document.getElementById('currentAnnouncementWrap');
+    const active = (data.announcements || []).find(a => a.active);
+    currentWrap.innerHTML = active
+      ? `<p class="hint" style="margin:0;">Currently showing: <strong style="color:var(--text);">${escapeHtml(active.message)}</strong></p>`
+      : `<p class="hint" style="margin:0;">No announcement is currently active.</p>`;
+
+    // -- sales report --
+    const t = data.sales.tracked, u = data.sales.untracked;
+    document.getElementById('salesTrackedCharged').textContent = fmtUsd(t.chargedUsd);
+    document.getElementById('salesTrackedRaw').textContent = fmtUsd(t.rawUsd);
+    const profitEl = document.getElementById('salesTrackedProfit');
+    profitEl.textContent = fmtUsd(t.profitUsd);
+    profitEl.className = 'num ' + (t.profitUsd >= 0 ? 'profit-positive' : 'profit-negative');
+    document.getElementById('salesTrackedCount').textContent = t.jobCount;
+    document.getElementById('salesUntrackedCharged').textContent = fmtUsd(u.chargedUsd);
+    document.getElementById('salesUntrackedCount').textContent = u.jobCount;
+
+    const byTypeBody = document.getElementById('byJobTypeBody');
+    const jobTypes = Object.keys(data.sales.byJobType).sort();
+    byTypeBody.innerHTML = jobTypes.length ? jobTypes.map((jt) => {
+      const b = data.sales.byJobType[jt];
+      return `<tr>
+        <td>${escapeHtml(jt)}</td>
+        <td class="num">${fmtUsd(b.tracked.chargedUsd)}</td>
+        <td class="num">${fmtUsd(b.tracked.rawUsd)}</td>
+        <td class="num">${fmtUsd(b.tracked.profitUsd)}</td>
+        <td class="num">${b.tracked.jobCount}</td>
+        <td class="num">${fmtUsd(b.untracked.chargedUsd)}</td>
+        <td class="num">${b.untracked.jobCount}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="7" style="color:var(--text-muted);">No job history yet.</td></tr>';
+
+    // -- users table --
+    const usersBody = document.getElementById('usersBody');
+    usersBody.innerHTML = data.users.length ? data.users.map((u2) => `
+      <tr>
+        <td>${escapeHtml(u2.email)}${u2.isAdmin ? ' <span class="badge admin">admin</span>' : ''}</td>
+        <td>${fmtDate(u2.createdAt)}</td>
+        <td class="num">${u2.balanceUsd === null ? '—' : fmtUsd(u2.balanceUsd)}</td>
+        <td class="num">${fmtUsd(u2.totalPurchasedUsd)}</td>
+        <td class="num">${fmtUsd(u2.totalChargedUsd)}</td>
+        <td class="num">${u2.jobCount}</td>
+        <td><button class="secondary adjust-trigger-btn" data-user-id="${u2.id}" data-email="${escapeHtml(u2.email)}">Adjust</button></td>
+      </tr>`).join('') : '<tr><td colspan="7" style="color:var(--text-muted);">No users yet.</td></tr>';
+
+    usersBody.querySelectorAll('.adjust-trigger-btn').forEach((btn) => {
+      btn.addEventListener('click', () => openAdjustPanel(btn.dataset.userId, btn.dataset.email));
+    });
+
+    // -- purchases table --
+    const purchasesBody = document.getElementById('purchasesBody');
+    purchasesBody.innerHTML = data.purchases.length ? data.purchases.map((p) => `
+      <tr>
+        <td>${fmtDate(p.createdAt)}</td>
+        <td>${escapeHtml(p.email)}</td>
+        <td class="num">${fmtUsd(p.amountUsd)}</td>
+        <td>${escapeHtml(p.description || '')}</td>
+      </tr>`).join('') : '<tr><td colspan="4" style="color:var(--text-muted);">No purchases yet.</td></tr>';
+  }
+
+  // -- multiplier save --
+  document.getElementById('multiplierSaveBtn').addEventListener('click', async () => {
+    const status = document.getElementById('multiplierStatus');
+    const val = Number(document.getElementById('multiplierInput').value);
+    if (!Number.isFinite(val) || val < 1 || val > 5) {
+      status.textContent = 'Multiplier must be a number between 1.0 and 5.0.';
+      status.className = 'status-text bad';
+      return;
+    }
+    status.textContent = 'Saving...';
+    status.className = 'status-text';
+    try {
+      const result = await callAdminApi('/api/admin-update-multiplier', { method: 'POST', body: JSON.stringify({ multiplier: val }) });
+      status.textContent = `Saved. New multiplier is ${Number(result.multiplier).toFixed(2)}×, effective immediately.`;
+      status.className = 'status-text good';
+      document.getElementById('statMultiplier').textContent = Number(result.multiplier).toFixed(2) + '×';
+    } catch (err) {
+      status.textContent = 'Could not save: ' + err.message;
+      status.className = 'status-text bad';
+    }
+  });
+
+  // -- announcement post/clear --
+  document.getElementById('announcementPostBtn').addEventListener('click', async () => {
+    const status = document.getElementById('announcementStatus');
+    const message = document.getElementById('announcementInput').value;
+    if (!message.trim()) {
+      status.textContent = 'Write a message first.';
+      status.className = 'status-text bad';
+      return;
+    }
+    status.textContent = 'Posting...';
+    status.className = 'status-text';
+    try {
+      await callAdminApi('/api/admin-announcement', { method: 'POST', body: JSON.stringify({ action: 'post', message }) });
+      document.getElementById('announcementInput').value = '';
+      status.textContent = 'Posted. It will show to logged-in users now.';
+      status.className = 'status-text good';
+      await loadAndRenderAll();
+    } catch (err) {
+      status.textContent = 'Could not post: ' + err.message;
+      status.className = 'status-text bad';
+    }
+  });
+
+  document.getElementById('announcementClearBtn').addEventListener('click', async () => {
+    const status = document.getElementById('announcementStatus');
+    status.textContent = 'Clearing...';
+    status.className = 'status-text';
+    try {
+      await callAdminApi('/api/admin-announcement', { method: 'POST', body: JSON.stringify({ action: 'clear' }) });
+      status.textContent = 'Cleared.';
+      status.className = 'status-text good';
+      await loadAndRenderAll();
+    } catch (err) {
+      status.textContent = 'Could not clear: ' + err.message;
+      status.className = 'status-text bad';
+    }
+  });
+
+  // -- adjust credit panel --
+  let adjustTargetUserId = null;
+  function openAdjustPanel(userId, email) {
+    adjustTargetUserId = userId;
+    document.getElementById('adjustTargetEmail').textContent = email;
+    document.getElementById('adjustAmountInput').value = '';
+    document.getElementById('adjustDescriptionInput').value = '';
+    document.getElementById('adjustStatus').textContent = '';
+    document.getElementById('adjustPanel').classList.add('open');
+    document.getElementById('adjustPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  document.getElementById('adjustCancelBtn').addEventListener('click', () => {
+    document.getElementById('adjustPanel').classList.remove('open');
+    adjustTargetUserId = null;
+  });
+  document.getElementById('adjustSubmitBtn').addEventListener('click', async () => {
+    const status = document.getElementById('adjustStatus');
+    const amount = Number(document.getElementById('adjustAmountInput').value);
+    const description = document.getElementById('adjustDescriptionInput').value;
+    if (!adjustTargetUserId) return;
+    if (!Number.isFinite(amount) || amount === 0) {
+      status.textContent = 'Enter a non-zero amount.';
+      status.className = 'status-text bad';
+      return;
+    }
+    if (!description.trim()) {
+      status.textContent = 'A reason is required -- it shows up in the user\'s activity log.';
+      status.className = 'status-text bad';
+      return;
+    }
+    status.textContent = 'Applying...';
+    status.className = 'status-text';
+    try {
+      const result = await callAdminApi('/api/admin-adjust-credit', {
+        method: 'POST',
+        body: JSON.stringify({ target_user_id: adjustTargetUserId, amount, description })
+      });
+      status.textContent = `Done. New balance: ${fmtUsd(result.new_balance)}`;
+      status.className = 'status-text good';
+      await loadAndRenderAll();
+    } catch (err) {
+      status.textContent = 'Could not apply adjustment: ' + err.message;
+      status.className = 'status-text bad';
+    }
+  });
+
+  // -- auth gate --
+  async function checkAdminAndShow(email) {
+    try {
+      const { data, error } = await sb.from('user_preferences').select('is_admin').single();
+      if (error || !data || data.is_admin !== true) {
+        showAccessDenied(email);
+        return;
+      }
+      await showAdminShell(email);
+    } catch (e) {
+      showAccessDenied(email);
+    }
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) checkAdminAndShow(data.session.user.email);
+    else showLoggedOut();
+  });
+
+  document.getElementById('authLoginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    authStatus.textContent = 'Logging in...';
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { authStatus.textContent = 'Login failed: ' + error.message; return; }
+    authStatus.textContent = '';
+    await checkAdminAndShow(data.user.email);
+  });
+
+  document.getElementById('adminLogoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    showLoggedOut();
+  });
+  document.getElementById('deniedLogoutLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await sb.auth.signOut();
+    showLoggedOut();
+  });
+})();
+</script>

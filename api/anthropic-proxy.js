@@ -4,7 +4,31 @@ const { createClient } = require('@supabase/supabase-js');
 const PRICE_INPUT_PER_MTOK = 3.0;
 const PRICE_OUTPUT_PER_MTOK = 15.0;
 const PRICE_PER_SEARCH = 0.01;
-const SERVICE_MULTIPLIER = 1.10; // applied to the combined total below — covers tokens AND search fees alike
+// Fallback only — used if app_settings can't be read for any reason, so a
+// transient settings-table hiccup degrades to "charge the old rate" rather
+// than breaking every AI action in the app.
+const FALLBACK_SERVICE_MULTIPLIER = 1.10;
+
+// The real multiplier now lives in app_settings (key='service_multiplier'),
+// editable live from the admin panel without a redeploy. supabaseAdmin uses
+// the service_role key, so this read bypasses RLS regardless of who's logged in.
+async function getServiceMultiplier(supabaseAdmin) {
+  const { data, error } = await supabaseAdmin
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'service_multiplier')
+    .single();
+  if (error || !data || data.value === null || data.value === undefined) {
+    console.warn('Could not read service_multiplier from app_settings, using fallback:', error && error.message);
+    return FALLBACK_SERVICE_MULTIPLIER;
+  }
+  const parsed = Number(data.value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    console.warn('service_multiplier in app_settings is not a valid positive number, using fallback:', data.value);
+    return FALLBACK_SERVICE_MULTIPLIER;
+  }
+  return parsed;
+}
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -55,17 +79,20 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Server is missing the ANTHROPIC_API_KEY environment variable.' });
   }
 
-  let anthropicResponse, data;
+  let anthropicResponse, data, serviceMultiplier;
   try {
-    anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(anthropicBody)
-    });
+    [anthropicResponse, serviceMultiplier] = await Promise.all([
+      fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify(anthropicBody)
+      }),
+      getServiceMultiplier(supabaseAdmin)
+    ]);
     data = await anthropicResponse.json();
   } catch (err) {
     return res.status(500).json({ error: err.message });
@@ -82,7 +109,7 @@ module.exports = async (req, res) => {
     const webSearches = (data.usage.server_tool_use && data.usage.server_tool_use.web_search_requests) || 0;
     const rawCost = (inputTokens * PRICE_INPUT_PER_MTOK + outputTokens * PRICE_OUTPUT_PER_MTOK) / 1e6
       + (webSearches * PRICE_PER_SEARCH);
-    const cost = rawCost * SERVICE_MULTIPLIER;
+    const cost = rawCost * serviceMultiplier;
     const summary = webSearches > 0
       ? `${inputTokens} in / ${outputTokens} out tokens, ${webSearches} search(es)`
       : `${inputTokens} in / ${outputTokens} out tokens`;
@@ -95,11 +122,15 @@ module.exports = async (req, res) => {
     });
     if (!deductError) newBalance = deductResult;
 
+    // raw_cost_usd is the real Anthropic cost before markup; cost_usd is what
+    // the user was actually charged. Keeping both is what makes profit
+    // computable later without guessing.
     await supabaseAdmin.from('job_history').insert({
       user_id: userId,
       job_type: jobType,
       summary: summary,
-      cost_usd: cost
+      cost_usd: cost,
+      raw_cost_usd: rawCost
     });
   }
 
