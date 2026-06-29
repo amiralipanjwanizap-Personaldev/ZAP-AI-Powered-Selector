@@ -124,6 +124,7 @@
     border: 1px solid var(--border);
   }
   button.secondary:hover:not(:disabled) { background: var(--hover-wash); }
+  button.secondary:disabled { background: var(--disabled-bg); color: var(--disabled-text); border-color: var(--border); }
   .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .grid {
     display: grid;
@@ -422,6 +423,62 @@
   }
   .stat-card .stat-value { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; color: var(--text); line-height: 1.1; }
   .stat-card .stat-label { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+
+  .how-it-works-steps { display: flex; flex-direction: column; gap: 22px; margin-bottom: 8px; }
+  .how-step { display: flex; gap: 16px; align-items: flex-start; }
+  .how-step .step-badge { margin-top: 2px; }
+  .how-step h3 { font-size: 16px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
+  .how-step p { font-size: 14px; color: var(--text-muted); margin: 0; max-width: 580px; }
+  .how-it-works-faq { padding-left: 18px; margin: 0; }
+  .how-it-works-faq li { font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
+  .how-it-works-faq li:last-child { margin-bottom: 0; }
+  .how-it-works-faq li strong { color: var(--text); }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+  }
+  .empty-state h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; margin: 0 0 10px; color: var(--text); }
+  .empty-state p { font-size: 14px; color: var(--text-muted); max-width: 440px; margin: 0 auto 20px; }
+
+  .tour-clickblock {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9997;
+    background: transparent;
+  }
+  .tour-spotlight {
+    position: fixed;
+    z-index: 9998;
+    border-radius: 10px;
+    box-shadow: 0 0 0 9999px rgba(8,7,5,0.76);
+    pointer-events: none;
+    transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease;
+  }
+  .tour-tooltip {
+    position: fixed;
+    z-index: 9999;
+    width: 300px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+  }
+  .tour-tooltip h4 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 16px; margin: 0 0 8px; color: var(--text); }
+  .tour-tooltip p { font-size: 13.5px; color: var(--text-muted); margin: 0 0 16px; line-height: 1.5; }
+  .tour-tooltip-footer { display: flex; align-items: center; justify-content: space-between; }
+  .tour-step-counter { font-size: 12px; color: var(--text-muted); }
+  .tour-tooltip-actions { display: flex; gap: 8px; }
+  .tour-tooltip-actions button { padding: 7px 14px; font-size: 13px; }
+  .tour-skip {
+    background: transparent; border: none; color: var(--text-muted);
+    font-size: 12.5px; cursor: pointer; text-decoration: underline; padding: 0;
+    width: auto;
+  }
   .dashboard-controls { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
   .dashboard-controls input[type="text"] {
     flex: 1;
@@ -479,6 +536,25 @@
   <div id="authStatus"></div>
 </div>
 
+<div id="tourOverlay" style="display:none;">
+  <div class="tour-clickblock"></div>
+  <div class="tour-spotlight" id="tourSpotlight"></div>
+  <div class="tour-tooltip" id="tourTooltip">
+    <h4 id="tourTitle"></h4>
+    <p id="tourBody"></p>
+    <div class="tour-tooltip-footer">
+      <span class="tour-step-counter" id="tourCounter"></span>
+      <div class="tour-tooltip-actions">
+        <button class="secondary" id="tourBackBtn">Back</button>
+        <button id="tourNextBtn">Next</button>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:10px;">
+      <button class="tour-skip" id="tourSkipBtn">Skip tour</button>
+    </div>
+  </div>
+</div>
+
 <div id="accountBar">
   <div class="bar-inner">
     <span class="bar-brand">ZAP Trend Curator</span>
@@ -508,6 +584,10 @@
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M3 12h4M19.07 4.93l-2.83 2.83M4.93 19.07l2.83-2.83"/><path d="M12 12l7 2-3 3-2-3z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
       Curate
     </button>
+    <button class="nav-item" data-view="how-it-works">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .8-1 1.7v.5"/><circle cx="12" cy="17" r="0.3" fill="currentColor"/></svg>
+      How it works
+    </button>
   </div>
 
   <div id="shellMain">
@@ -527,7 +607,7 @@
         </div>
 
         <div id="galleryListSection">
-          <div class="dashboard-controls">
+          <div class="dashboard-controls" id="dashboardControls">
             <input type="text" id="gallerySearchInput" placeholder="Search by name">
             <select id="gallerySortSelect">
               <option value="newest">Newest first</option>
@@ -560,6 +640,74 @@
             <textarea id="detailCaptionCarousel" readonly></textarea>
           </div>
           <button id="deleteGalleryBtn" style="background:var(--bad-soft); color:var(--bad);">Delete this gallery</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="howItWorksView" style="display:none;">
+      <div class="wrap">
+        <div class="dashboard-header">
+          <h1>How it works</h1>
+          <p class="sub">The full flow, start to finish.</p>
+        </div>
+
+        <div class="how-it-works-steps">
+          <div class="how-step">
+            <span class="step-badge">1</span>
+            <div>
+              <h3>Pick your genre</h3>
+              <p>Weddings, portraits, fashion, corporate headshots, and more. Trend priorities, scoring categories, and the carousel's story order all adjust to match what you select.</p>
+            </div>
+          </div>
+          <div class="how-step">
+            <span class="step-badge">2</span>
+            <div>
+              <h3>Upload your gallery</h3>
+              <p>Drop in photos from a shoot, up to 800 at once. A quick on-device check flags likely-blurry shots before anything is sent for AI scoring.</p>
+            </div>
+          </div>
+          <div class="how-step">
+            <span class="step-badge">3</span>
+            <div>
+              <h3>Run AI scoring</h3>
+              <p>The estimated cost is shown on the button itself before you click. Only the photos you've checked get scored.</p>
+            </div>
+          </div>
+          <div class="how-step">
+            <span class="step-badge">4</span>
+            <div>
+              <h3>Review your results</h3>
+              <p>A single best shot, an ordered carousel that avoids near-duplicate frames, and ready-to-post captions for both.</p>
+            </div>
+          </div>
+          <div class="how-step">
+            <span class="step-badge">5</span>
+            <div>
+              <h3>Save to your dashboard</h3>
+              <p>Name the gallery and save it. Reopen it anytime later, fully intact, without spending any more credit.</p>
+            </div>
+          </div>
+          <div class="how-step">
+            <span class="step-badge">6</span>
+            <div>
+              <h3>Top up anytime</h3>
+              <p>Every account starts with a free credit. Add more in $5, $20, or $50 packs whenever you need to, right from the top bar.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:32px;">
+          <h2>Good to know</h2>
+          <ul class="how-it-works-faq">
+            <li><strong>Costs are shown before you spend anything.</strong> Every AI action shows its estimated cost up front, not just after the fact.</li>
+            <li><strong>"Recent activity" shows exactly what you were charged for.</strong> Click it next to your balance anytime to see a real log of every AI call and purchase, with the actual amount each one cost.</li>
+            <li><strong>Free accounts can save up to 3 galleries.</strong> Delete one from your dashboard to free up a slot if you need to save a new one.</li>
+            <li><strong>Switching genre after scoring keeps old tags.</strong> If you change genre partway through a gallery, re-run AI analysis on it for accurate categorization.</li>
+          </ul>
+        </div>
+
+        <div style="text-align:center; margin-top:32px;">
+          <button id="howItWorksCta">Start curating</button>
         </div>
       </div>
     </div>
@@ -603,7 +751,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
       <div id="trendRefreshStatus" class="progress-text" style="margin-top:8px;"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="uploadCard">
       <h2><span class="step-badge">1</span> Upload your photos</h2>
       <p class="hint">Built to handle a full gallery, up to 800 photos. Large batches use more browser memory; if things feel sluggish, try a 100-150 photo subset first.</p>
       <input type="file" id="fileInput" accept="image/*" multiple>
@@ -711,8 +859,8 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   // Paste your own values here — these two are SAFE to expose client-side
   // by design (unlike the Anthropic key or the Supabase service_role key,
   // which must only ever live in Vercel's server-side environment variables).
-  const SUPABASE_URL = 'https://guxawmliwemssbgfblrl.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_Ox3XOFrNhsvMDW3kGtOnTg_qZykFeks';
+  const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_PROJECT_URL_HERE';
+  const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE';
 
   let sb;
   try {
@@ -838,6 +986,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
     await refreshBalanceDisplay();
     handlePurchaseReturn();
     showView('dashboard');
+    maybeStartTour();
   }
 
   function showLoggedOut() {
@@ -848,6 +997,7 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
 
   function showView(view) {
     document.getElementById('dashboardView').style.display = view === 'dashboard' ? 'block' : 'none';
+    document.getElementById('howItWorksView').style.display = view === 'how-it-works' ? 'block' : 'none';
     appEl.style.display = view === 'curate' ? 'block' : 'none';
     document.querySelectorAll('#sidebar .nav-item').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.view === view);
@@ -858,6 +1008,143 @@ Occasional bold high-contrast / direct-flash shot for variety</textarea>
   document.querySelectorAll('#sidebar .nav-item').forEach((btn) => {
     btn.addEventListener('click', () => showView(btn.dataset.view));
   });
+
+  document.getElementById('howItWorksCta').addEventListener('click', () => showView('curate'));
+
+  // ── First-visit guided tour ──
+  // Every step declares the view it needs, so navigating Back works
+  // correctly too, not just Next. analyzeCard is force-shown for its step
+  // since it's naturally hidden until photos are uploaded — there's no
+  // real way around that for a first-visit tour.
+  const TOUR_STEPS = [
+    {
+      target: '#sidebar', view: 'dashboard',
+      title: 'Welcome to ZAP Trend Curator',
+      body: '"Dashboard" holds your saved galleries. "Curate" is where the AI does its work. "How it works" has this walkthrough again anytime.'
+    },
+    {
+      target: '#accountBar', view: 'dashboard',
+      title: 'Your balance, always visible',
+      body: 'AI actions use a small amount of credit. Add more with the $5 / $20 / $50 buttons, and check "Recent activity" to see exactly what you were charged for.'
+    },
+    {
+      target: '#genreSelect', view: 'curate',
+      title: 'Start with your genre',
+      body: 'This swaps the trend priorities, scoring categories, and carousel order to match what you actually shoot.'
+    },
+    {
+      target: '#uploadCard', view: 'curate',
+      title: 'Upload your gallery',
+      body: 'Drop in up to 800 photos from a shoot. A quick check flags likely-blurry shots before anything is sent for AI scoring.'
+    },
+    {
+      target: '#analyzeCard', view: 'curate', forceShow: true,
+      title: 'Run AI scoring',
+      body: 'The estimated cost shows right on this button before you click, so there are never surprises.'
+    }
+  ];
+  let tourStep = 0;
+
+  function cleanupTourForceShow() {
+    TOUR_STEPS.forEach((s) => {
+      if (s.forceShow) {
+        const el = document.querySelector(s.target);
+        if (el) el.style.display = 'none';
+      }
+    });
+  }
+
+  function showTourStep(i) {
+    cleanupTourForceShow();
+    const step = TOUR_STEPS[i];
+    showView(step.view);
+
+    document.getElementById('tourTitle').textContent = step.title;
+    document.getElementById('tourBody').textContent = step.body;
+    document.getElementById('tourCounter').textContent = `${i + 1} of ${TOUR_STEPS.length}`;
+    document.getElementById('tourBackBtn').disabled = i === 0;
+    document.getElementById('tourNextBtn').textContent = i === TOUR_STEPS.length - 1 ? 'Done' : 'Next';
+
+    const el = document.querySelector(step.target);
+    if (!el) { tourStep = i; nextTourStepSafe(); return; }
+    if (step.forceShow) el.style.display = 'block';
+
+    requestAnimationFrame(() => {
+      const rect = el.getBoundingClientRect();
+      const pad = 6;
+      const spotlight = document.getElementById('tourSpotlight');
+      spotlight.style.top = (rect.top - pad) + 'px';
+      spotlight.style.left = (rect.left - pad) + 'px';
+      spotlight.style.width = (rect.width + pad * 2) + 'px';
+      spotlight.style.height = (rect.height + pad * 2) + 'px';
+
+      const tooltip = document.getElementById('tourTooltip');
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - (rect.top + rect.height);
+      let top;
+      if (spaceBelow > tooltipRect.height + 24) {
+        top = rect.top + rect.height + 14;
+      } else if (rect.top > tooltipRect.height + 24) {
+        top = rect.top - tooltipRect.height - 14;
+      } else {
+        top = Math.max(14, (window.innerHeight - tooltipRect.height) / 2);
+      }
+      const left = Math.min(Math.max(14, rect.left), window.innerWidth - tooltipRect.width - 14);
+      tooltip.style.top = top + 'px';
+      tooltip.style.left = left + 'px';
+    });
+  }
+
+  // Used only as a safety fallback if a target element is ever missing
+  // (e.g. a future change renames an id) — skips forward rather than
+  // leaving the tour stuck on a step that can't position itself.
+  function nextTourStepSafe() {
+    if (tourStep < TOUR_STEPS.length - 1) { tourStep++; showTourStep(tourStep); }
+    else { endTour(); }
+  }
+
+  async function endTour() {
+    cleanupTourForceShow();
+    document.getElementById('tourOverlay').style.display = 'none';
+    showView('dashboard');
+    try {
+      const { data: userData } = await sb.auth.getUser();
+      if (userData && userData.user) {
+        await sb.from('user_preferences').upsert({ user_id: userData.user.id, has_seen_tour: true });
+      }
+    } catch (e) {
+      console.warn('Could not save tour-seen state:', e);
+    }
+  }
+
+  document.getElementById('tourNextBtn').addEventListener('click', () => {
+    if (tourStep === TOUR_STEPS.length - 1) { endTour(); return; }
+    tourStep++;
+    showTourStep(tourStep);
+  });
+  document.getElementById('tourBackBtn').addEventListener('click', () => {
+    if (tourStep === 0) return;
+    tourStep--;
+    showTourStep(tourStep);
+  });
+  document.getElementById('tourSkipBtn').addEventListener('click', endTour);
+
+  window.addEventListener('resize', () => {
+    if (document.getElementById('tourOverlay').style.display === 'block') showTourStep(tourStep);
+  });
+
+  async function maybeStartTour() {
+    try {
+      const { data, error } = await sb.from('user_preferences').select('has_seen_tour').single();
+      if (error) { console.warn('Could not check tour status:', error.message); return; }
+      if (data && data.has_seen_tour) return;
+      tourStep = 0;
+      document.getElementById('tourOverlay').style.display = 'block';
+      showTourStep(0);
+    } catch (e) {
+      console.warn('Could not check tour status:', e);
+    }
+  }
 
   sb.auth.getSession().then(({ data }) => {
     if (data.session) showLoggedIn(data.session.user.email);
@@ -1915,6 +2202,19 @@ Your reply must be raw JSON only. No markdown, no code fences, no text before or
     else if (sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
 
     grid.innerHTML = '';
+    document.getElementById('dashboardControls').style.display = allGalleries.length === 0 ? 'none' : 'flex';
+
+    if (allGalleries.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <h3>No saved galleries yet</h3>
+          <p>Score a gallery, then use "Save this gallery" to keep the best shot, carousel, and captions here for later, without spending credit to regenerate them.</p>
+          <button id="emptyStateCta">Go to Curate</button>
+        </div>`;
+      document.getElementById('emptyStateCta').addEventListener('click', () => showView('curate'));
+      return;
+    }
+
     if (list.length === 0) {
       grid.innerHTML = '<p class="hint">No galleries match.</p>';
       return;
